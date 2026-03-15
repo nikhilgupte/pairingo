@@ -526,7 +526,7 @@ function handleCardSelection(index) {
     turnCount += 1;
     firstSelection = index;
     // Check if timer is enabled
-    const timerEnabled = document.getElementById('timer-enabled')?.checked || false;
+    const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
     if (timerEnabled) {
       // Calculate time based on pairs discovered: 12s at start, 3s when all pairs found
       const pairsDiscovered = matchedPairs;
@@ -746,7 +746,7 @@ function sendMessage(payload) {
 }
 
 function hostMultiplayer() {
-  const timerEnabled = document.getElementById('online-timer-enabled')?.checked || false;
+  const timerEnabled = document.getElementById('online-timer-toggle-btn')?.classList.contains('active') || false;
   sendMessage({ type: "create-room", timerEnabled });
 }
 
@@ -869,6 +869,21 @@ if (cheatModeCheckbox) {
     if (deck.length > 0) {
       renderBoard();
     }
+  });
+}
+
+// Timer toggle buttons
+const timerToggleBtn = document.getElementById('timer-toggle-btn');
+if (timerToggleBtn) {
+  timerToggleBtn.addEventListener('click', () => {
+    timerToggleBtn.classList.toggle('active');
+  });
+}
+
+const onlineTimerToggleBtn = document.getElementById('online-timer-toggle-btn');
+if (onlineTimerToggleBtn) {
+  onlineTimerToggleBtn.addEventListener('click', () => {
+    onlineTimerToggleBtn.classList.toggle('active');
   });
 }
 
