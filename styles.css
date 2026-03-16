@@ -608,6 +608,36 @@ input[name="turn-speed"] {
   transform: scale(0.98);
 }
 
+/* Subtle card back patterns */
+.card-back.pattern-lines {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--card-back),
+    var(--card-back) 8px,
+    rgba(215, 219, 230, 0.3) 8px,
+    rgba(215, 219, 230, 0.3) 10px
+  );
+}
+
+.card-back.pattern-dots {
+  background:
+    radial-gradient(circle, rgba(215, 219, 230, 0.4) 1px, transparent 1px);
+  background-size: 12px 12px;
+  background-color: var(--card-back);
+}
+
+.card-back.pattern-grid {
+  background-image:
+    linear-gradient(rgba(215, 219, 230, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(215, 219, 230, 0.2) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-color: var(--card-back);
+}
+
+.card-back.pattern-solid {
+  background: linear-gradient(135deg, var(--card-back) 0%, rgba(215, 219, 230, 0.15) 100%);
+}
+
 .card-back img {
   width: 60%;
   height: 60%;

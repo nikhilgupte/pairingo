@@ -49,6 +49,9 @@ let turnTimerDisplay = null;
 let localGameSpeedMs = 0;
 let pendingInviteCopy = false;
 let multiplayerTurnTimerStarted = false;
+let currentCardBackPattern = "";
+
+const CARD_BACK_PATTERNS = ["pattern-lines", "pattern-dots", "pattern-grid", "pattern-solid"];
 
 const multiplayer = {
   active: false,
@@ -316,7 +319,7 @@ function renderBoard() {
     }
     button.innerHTML =
       `<span class="card-face card-front">${frontText}</span>` +
-      `<span class="card-face card-back"><img src="${card.image}" alt="" aria-hidden="true" /></span>`;
+      `<span class="card-face card-back ${currentCardBackPattern}"><img src="${card.image}" alt="" aria-hidden="true" /></span>`;
     if (cheatMode) {
       button.classList.add('cheat-mode');
     }
@@ -584,6 +587,8 @@ function startGame() {
   matchedPairs = 0;
   multiplayerGameOver = false;
   turnCount = 0;
+  // Pick a random card back pattern for this game
+  currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
   deck = createDeck();
   currentDeckSignature = "";
 
@@ -762,6 +767,8 @@ function ensureSocket() {
         updateUrlWithRoom(message.roomId);
         updateMultiplayerControls();
         multiplayerTurnTimerStarted = false;
+        // Pick a random card back pattern for this game
+        currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
         // Hide player count selector in multiplayer mode
         const playerCountSelector = document.querySelector('.player-count-selector');
         if (playerCountSelector) {
