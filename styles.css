@@ -608,34 +608,34 @@ input[name="turn-speed"] {
   transform: scale(0.98);
 }
 
-/* Subtle card back patterns */
-.card-back.pattern-lines {
+/* Subtle card front (face-down) patterns */
+.card-front.pattern-lines {
   background: repeating-linear-gradient(
     45deg,
-    var(--card-back),
-    var(--card-back) 8px,
-    rgba(215, 219, 230, 0.3) 8px,
-    rgba(215, 219, 230, 0.3) 10px
-  );
+    var(--card-front),
+    var(--card-front) 8px,
+    rgba(60, 70, 90, 0.6) 8px,
+    rgba(60, 70, 90, 0.6) 10px
+  ) !important;
 }
 
-.card-back.pattern-dots {
+.card-front.pattern-dots {
   background:
-    radial-gradient(circle, rgba(215, 219, 230, 0.4) 1px, transparent 1px);
+    radial-gradient(circle, rgba(255, 255, 255, 0.15) 1.5px, transparent 1.5px);
   background-size: 12px 12px;
-  background-color: var(--card-back);
+  background-color: var(--card-front) !important;
 }
 
-.card-back.pattern-grid {
+.card-front.pattern-grid {
   background-image:
-    linear-gradient(rgba(215, 219, 230, 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(215, 219, 230, 0.2) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 16px 16px;
-  background-color: var(--card-back);
+  background-color: var(--card-front) !important;
 }
 
-.card-back.pattern-solid {
-  background: linear-gradient(135deg, var(--card-back) 0%, rgba(215, 219, 230, 0.15) 100%);
+.card-front.pattern-solid {
+  background: linear-gradient(135deg, var(--card-front) 0%, rgba(60, 70, 90, 0.3) 100%) !important;
 }
 
 .card-back img {

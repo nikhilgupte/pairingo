@@ -318,8 +318,8 @@ function renderBoard() {
       frontText = String(card.matchId);
     }
     button.innerHTML =
-      `<span class="card-face card-front">${frontText}</span>` +
-      `<span class="card-face card-back ${currentCardBackPattern}"><img src="${card.image}" alt="" aria-hidden="true" /></span>`;
+      `<span class="card-face card-front ${currentCardBackPattern}">${frontText}</span>` +
+      `<span class="card-face card-back"><img src="${card.image}" alt="" aria-hidden="true" /></span>`;
     if (cheatMode) {
       button.classList.add('cheat-mode');
     }
