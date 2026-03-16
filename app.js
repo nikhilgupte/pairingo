@@ -226,6 +226,11 @@ function renderBoard() {
     if (cheatMode) {
       frontText = String(card.matchId);
     }
+    // Subtle random rotation and spacing for natural card placement
+    const rotation = (Math.random() * 4 - 2); // -2 to +2 degrees
+    const offsetX = (Math.random() * 2 - 1); // -1 to +1 pixels
+    const offsetY = (Math.random() * 2 - 1); // -1 to +1 pixels
+    button.style.transform = `rotate(${rotation}deg) translate(${offsetX}px, ${offsetY}px)`;
     button.innerHTML =
       `<span class="card-face card-front ${currentCardBackPattern}" style="background-color: ${currentCardBackColor}; --card-color: ${currentCardBackColor};">${frontText}</span>` +
       `<span class="card-face card-back emoji-icon">${card.image}</span>`;

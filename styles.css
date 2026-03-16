@@ -603,7 +603,6 @@ input[name="turn-speed"] {
 .card-back {
   background: var(--card-back);
   color: var(--text);
-  border: 2px solid var(--card-front);
   opacity: 0;
   transform: scale(0.98);
 }
