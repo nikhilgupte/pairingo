@@ -1,23 +1,23 @@
 const TOTAL_PAIRS = 18;
 const OBJECT_TYPES = [
-  "umbrella",
+  "bulb",
+  "cake",
+  "skates",
+  "basketball",
+  "tennis ball",
+  "shoe",
   "book",
-  "backpack",
-  "candle",
-  "car",
-  "camera",
-  "key",
-  "mug",
-  "guitar",
-  "balloon",
-  "apple",
-  "leaf",
+  "bottle",
+  "glasses",
+  "watch",
   "clock",
-  "gift",
-  "hat",
-  "lamp",
-  "phone",
-  "rocket",
+  "bicycle",
+  "apple",
+  "orange",
+  "mug",
+  "t-shirt",
+  "sandal",
+  "car",
 ];
 
 const board = document.getElementById("game-board");
@@ -117,120 +117,129 @@ function buildIconSet() {
 
 function buildObjectMarkup(type) {
   switch (type) {
-    case "umbrella":
+    case "bulb":
       return (
-        `<path d="M20 50 Q50 20 80 50 Z" fill="#4f46e5" />` +
-        `<path d="M50 50 V72 Q50 84 40 84" stroke="#8b5cf6" stroke-width="6" fill="none" stroke-linecap="round" />`
+        `<circle cx="50" cy="42" r="14" fill="#fbbf24" />` +
+        `<path d="M40 54 Q40 64 45 68 L55 68 Q60 64 60 54" fill="#d97706" />` +
+        `<rect x="48" y="68" width="4" height="8" fill="#78350f" />`
+      );
+    case "cake":
+      return (
+        `<rect x="30" y="48" width="40" height="20" rx="4" fill="#d4763f" />` +
+        `<rect x="28" y="44" width="44" height="8" rx="2" fill="#f97316" />` +
+        `<circle cx="40" cy="38" r="4" fill="#fbbf24" />` +
+        `<circle cx="50" cy="36" r="4" fill="#fbbf24" />` +
+        `<circle cx="60" cy="38" r="4" fill="#fbbf24" />`
+      );
+    case "skates":
+      return (
+        `<circle cx="36" cy="56" r="8" fill="#1f2937" />` +
+        `<circle cx="64" cy="56" r="8" fill="#1f2937" />` +
+        `<rect x="32" y="42" width="10" height="14" rx="2" fill="#0ea5e9" />` +
+        `<rect x="58" y="42" width="10" height="14" rx="2" fill="#0ea5e9" />` +
+        `<path d="M42 50 L58 50" stroke="#0ea5e9" stroke-width="3" />`
+      );
+    case "basketball":
+      return (
+        `<circle cx="50" cy="52" r="16" fill="#f97316" stroke="#1f2937" stroke-width="2" />` +
+        `<path d="M50 36 Q50 52 50 68" stroke="#1f2937" stroke-width="2" fill="none" />` +
+        `<path d="M34 52 L66 52" stroke="#1f2937" stroke-width="2" />`
+      );
+    case "tennis ball":
+      return (
+        `<circle cx="50" cy="52" r="16" fill="#84cc16" stroke="#65a30d" stroke-width="2" />` +
+        `<path d="M38 46 Q50 54 38 58" stroke="#ffffff" stroke-width="2" fill="none" />` +
+        `<path d="M62 46 Q50 54 62 58" stroke="#ffffff" stroke-width="2" fill="none" />`
+      );
+    case "shoe":
+      return (
+        `<ellipse cx="45" cy="62" rx="12" ry="8" fill="#6b7280" />` +
+        `<path d="M35 58 Q40 48 50 46" stroke="#6b7280" stroke-width="6" fill="none" stroke-linecap="round" />` +
+        `<rect x="42" y="52" width="10" height="6" fill="#9ca3af" />`
       );
     case "book":
       return (
-        `<rect x="24" y="28" width="52" height="44" rx="6" fill="#f97316" />` +
-        `<rect x="24" y="28" width="10" height="44" fill="#ea580c" />` +
-        `<line x1="40" y1="36" x2="68" y2="36" stroke="#ffffff" stroke-width="3" />` +
-        `<line x1="40" y1="46" x2="68" y2="46" stroke="#ffffff" stroke-width="3" />`
+        `<rect x="28" y="32" width="44" height="40" rx="4" fill="#f97316" />` +
+        `<rect x="28" y="32" width="8" height="40" fill="#ea580c" />` +
+        `<line x1="40" y1="40" x2="66" y2="40" stroke="#ffffff" stroke-width="2" />` +
+        `<line x1="40" y1="50" x2="66" y2="50" stroke="#ffffff" stroke-width="2" />` +
+        `<line x1="40" y1="60" x2="66" y2="60" stroke="#ffffff" stroke-width="2" />`
       );
-    case "backpack":
+    case "bottle":
       return (
-        `<rect x="30" y="30" width="40" height="48" rx="10" fill="#10b981" />` +
-        `<rect x="36" y="52" width="28" height="20" rx="6" fill="#34d399" />` +
-        `<rect x="40" y="24" width="20" height="8" rx="4" fill="#059669" />`
+        `<path d="M45 30 Q42 35 42 45 L42 65 Q42 70 50 70 L58 65 L58 45 Q58 35 55 30 Z" fill="#10b981" />` +
+        `<rect x="47" y="22" width="6" height="8" fill="#059669" />` +
+        `<circle cx="50" cy="65" r="5" fill="#047857" />`
       );
-    case "candle":
+    case "glasses":
       return (
-        `<path d="M50 16 C56 24 54 30 50 32 C46 30 44 24 50 16 Z" fill="#f59e0b" />` +
-        `<rect x="42" y="30" width="16" height="40" rx="4" fill="#fca5a5" />` +
-        `<rect x="38" y="70" width="24" height="6" fill="#e5e7eb" />`
+        `<circle cx="38" cy="50" r="8" fill="none" stroke="#6b7280" stroke-width="3" />` +
+        `<circle cx="62" cy="50" r="8" fill="none" stroke="#6b7280" stroke-width="3" />` +
+        `<line x1="46" y1="50" x2="54" y2="50" stroke="#6b7280" stroke-width="3" />` +
+        `<line x1="30" y1="50" x2="32" y2="50" stroke="#6b7280" stroke-width="3" />` +
+        `<line x1="68" y1="50" x2="70" y2="50" stroke="#6b7280" stroke-width="3" />`
       );
-    case "car":
+    case "watch":
       return (
-        `<rect x="24" y="52" width="52" height="18" rx="6" fill="#3b82f6" />` +
-        `<rect x="34" y="42" width="32" height="12" rx="4" fill="#60a5fa" />` +
-        `<circle cx="36" cy="72" r="6" fill="#1e3a8a" />` +
-        `<circle cx="64" cy="72" r="6" fill="#1e3a8a" />`
+        `<rect x="38" y="38" width="24" height="28" rx="4" fill="#64748b" />` +
+        `<circle cx="50" cy="52" r="10" fill="#e2e8f0" stroke="#475569" stroke-width="2" />` +
+        `<line x1="50" y1="52" x2="50" y2="44" stroke="#475569" stroke-width="2" />` +
+        `<line x1="50" y1="52" x2="56" y2="58" stroke="#475569" stroke-width="2" />`
       );
-    case "camera":
+    case "clock":
       return (
-        `<rect x="26" y="38" width="48" height="34" rx="6" fill="#64748b" />` +
-        `<rect x="34" y="30" width="12" height="8" rx="2" fill="#94a3b8" />` +
-        `<circle cx="50" cy="55" r="10" fill="#1e293b" />` +
-        `<circle cx="50" cy="55" r="4" fill="#e2e8f0" />`
+        `<circle cx="50" cy="52" r="20" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3" />` +
+        `<line x1="50" y1="52" x2="50" y2="38" stroke="#1f2937" stroke-width="2" />` +
+        `<line x1="50" y1="52" x2="62" y2="58" stroke="#1f2937" stroke-width="2" />` +
+        `<circle cx="50" cy="52" r="3" fill="#1f2937" />`
       );
-    case "key":
+    case "bicycle":
       return (
-        `<circle cx="38" cy="52" r="10" stroke="#fbbf24" stroke-width="6" fill="none" />` +
-        `<rect x="48" y="50" width="28" height="6" fill="#fbbf24" />` +
-        `<rect x="64" y="56" width="6" height="6" fill="#fbbf24" />` +
-        `<rect x="72" y="56" width="6" height="6" fill="#fbbf24" />`
-      );
-    case "mug":
-      return (
-        `<rect x="30" y="40" width="30" height="30" rx="6" fill="#a78bfa" />` +
-        `<path d="M60 44 h8 a8 8 0 0 1 0 16 h-8" stroke="#a78bfa" stroke-width="6" fill="none" />` +
-        `<rect x="30" y="40" width="30" height="6" fill="#c4b5fd" />`
-      );
-    case "guitar":
-      return (
-        `<circle cx="46" cy="60" r="14" fill="#f59e0b" />` +
-        `<circle cx="60" cy="50" r="10" fill="#fbbf24" />` +
-        `<rect x="64" y="28" width="18" height="6" rx="3" fill="#92400e" />` +
-        `<line x1="68" y1="30" x2="68" y2="60" stroke="#92400e" stroke-width="2" />`
-      );
-    case "balloon":
-      return (
-        `<ellipse cx="50" cy="40" rx="16" ry="20" fill="#f472b6" />` +
-        `<circle cx="44" cy="34" r="4" fill="#fbcfe8" />` +
-        `<path d="M50 60 C48 70 52 80 48 88" stroke="#f472b6" stroke-width="3" fill="none" />`
+        `<circle cx="36" cy="60" r="10" fill="none" stroke="#0ea5e9" stroke-width="3" />` +
+        `<circle cx="64" cy="60" r="10" fill="none" stroke="#0ea5e9" stroke-width="3" />` +
+        `<path d="M45 45 L55 45 L64 60 M45 45 L36 60" stroke="#0ea5e9" stroke-width="2" />` +
+        `<rect x="48" y="40" width="4" height="10" fill="#0ea5e9" />`
       );
     case "apple":
       return (
         `<circle cx="50" cy="56" r="16" fill="#ef4444" />` +
-        `<rect x="48" y="32" width="4" height="8" fill="#7c3a1e" />` +
-        `<path d="M50 34 C56 32 62 36 60 42 C54 42 50 38 50 34 Z" fill="#22c55e" />`
+        `<rect x="48" y="32" width="4" height="10" fill="#78350f" />` +
+        `<path d="M52 38 C58 36 64 38 62 46 C56 44 52 42 52 38 Z" fill="#22c55e" />`
       );
-    case "leaf":
+    case "orange":
       return (
-        `<path d="M50 22 C70 28 78 50 60 70 C44 86 24 74 26 52 C28 36 38 26 50 22 Z" fill="#22c55e" />` +
-        `<path d="M50 28 L46 74" stroke="#15803d" stroke-width="3" />`
+        `<circle cx="50" cy="56" r="16" fill="#fb923c" />` +
+        `<circle cx="44" cy="48" r="3" fill="#f97316" />` +
+        `<circle cx="50" cy="46" r="3" fill="#f97316" />` +
+        `<circle cx="56" cy="48" r="3" fill="#f97316" />` +
+        `<path d="M48 38 L50 32 L52 38 Z" fill="#16a34a" />`
       );
-    case "clock":
+    case "mug":
       return (
-        `<circle cx="50" cy="52" r="20" fill="#e2e8f0" stroke="#94a3b8" stroke-width="4" />` +
-        `<line x1="50" y1="52" x2="50" y2="40" stroke="#475569" stroke-width="4" />` +
-        `<line x1="50" y1="52" x2="62" y2="56" stroke="#475569" stroke-width="4" />`
+        `<rect x="30" y="42" width="28" height="26" rx="4" fill="#a78bfa" />` +
+        `<path d="M58 46 Q68 46 68 56 Q68 66 58 66" stroke="#a78bfa" stroke-width="5" fill="none" stroke-linecap="round" />` +
+        `<rect x="30" y="42" width="28" height="4" fill="#c4b5fd" />`
       );
-    case "gift":
+    case "t-shirt":
       return (
-        `<rect x="30" y="40" width="40" height="30" fill="#f43f5e" />` +
-        `<rect x="47" y="40" width="6" height="30" fill="#fbbf24" />` +
-        `<rect x="30" y="52" width="40" height="6" fill="#fbbf24" />` +
-        `<path d="M50 34 C42 26 32 28 34 36 C36 44 46 42 50 36 Z" fill="#fbbf24" />` +
-        `<path d="M50 34 C58 26 68 28 66 36 C64 44 54 42 50 36 Z" fill="#fbbf24" />`
+        `<path d="M30 38 L40 52 L40 70 L60 70 L60 52 L70 38 M40 52 L30 52 M60 52 L70 52" fill="#3b82f6" stroke="#1e40af" stroke-width="2" />` +
+        `<circle cx="42" cy="48" r="2" fill="#ffffff" />` +
+        `<circle cx="58" cy="48" r="2" fill="#ffffff" />`
       );
-    case "hat":
+    case "sandal":
       return (
-        `<rect x="30" y="46" width="40" height="16" rx="8" fill="#0ea5e9" />` +
-        `<rect x="22" y="60" width="56" height="8" rx="4" fill="#38bdf8" />`
+        `<ellipse cx="42" cy="62" rx="10" ry="6" fill="#8b5cf6" />` +
+        `<ellipse cx="58" cy="62" rx="10" ry="6" fill="#8b5cf6" />` +
+        `<rect x="40" y="50" width="4" height="14" fill="#7c3aed" />` +
+        `<rect x="56" y="50" width="4" height="14" fill="#7c3aed" />` +
+        `<path d="M48 54 L52 54" stroke="#7c3aed" stroke-width="2" />`
       );
-    case "lamp":
+    case "car":
       return (
-        `<polygon points="30,44 70,44 60,30 40,30" fill="#f59e0b" />` +
-        `<rect x="48" y="44" width="4" height="20" fill="#94a3b8" />` +
-        `<rect x="42" y="64" width="16" height="6" fill="#94a3b8" />`
-      );
-    case "phone":
-      return (
-        `<rect x="34" y="28" width="32" height="44" rx="6" fill="#111827" />` +
-        `<rect x="38" y="34" width="24" height="28" rx="4" fill="#60a5fa" />` +
-        `<circle cx="50" cy="66" r="3" fill="#e5e7eb" />`
-      );
-    case "rocket":
-      return (
-        `<polygon points="50,18 58,30 42,30" fill="#f97316" />` +
-        `<rect x="44" y="28" width="12" height="36" rx="6" fill="#ef4444" />` +
-        `<circle cx="50" cy="42" r="5" fill="#e0f2fe" />` +
-        `<polygon points="44,56 34,68 44,68" fill="#f97316" />` +
-        `<polygon points="56,56 66,68 56,68" fill="#f97316" />` +
-        `<polygon points="50,72 56,84 44,84" fill="#facc15" />`
+        `<rect x="24" y="52" width="52" height="16" rx="4" fill="#3b82f6" />` +
+        `<rect x="34" y="44" width="32" height="10" rx="3" fill="#60a5fa" />` +
+        `<circle cx="34" cy="72" r="6" fill="#1f2937" />` +
+        `<circle cx="66" cy="72" r="6" fill="#1f2937" />`
       );
     default:
       return `<circle cx="50" cy="56" r="20" fill="#94a3b8" />`;
