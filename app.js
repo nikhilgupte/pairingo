@@ -883,5 +883,14 @@ if (cheatParam === "on" && cheatModeCheckbox) {
   cheatModeCheckbox.checked = true;
 }
 
+// Restart game when player count changes
+playerCountInputs.forEach((input) => {
+  input.addEventListener('change', () => {
+    if (!multiplayer.active) {
+      startGame();
+    }
+  });
+});
+
 updateMultiplayerControls();
 startGame();
