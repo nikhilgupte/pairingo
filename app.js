@@ -24,6 +24,8 @@ const board = document.getElementById("game-board");
 const statusText = document.getElementById("status");
 const inviteButton = document.getElementById("invite-btn");
 const joinButton = document.getElementById("join-btn");
+const joinSection = document.getElementById("join-section");
+const disconnectButton = document.getElementById("disconnect-btn");
 const roomInput = document.getElementById("room-input");
 const roomCode = document.getElementById("room-code");
 const connectionStatus = document.getElementById("connection-status");
@@ -88,6 +90,18 @@ function setPlayerControlsDisabled(disabled) {
 
 function updateMultiplayerControls() {
   setPlayerControlsDisabled(multiplayer.active);
+  updateJoinDisconnectUI();
+}
+
+function updateJoinDisconnectUI() {
+  // Show disconnect button only when connected to a room
+  if (multiplayer.active) {
+    if (joinSection) joinSection.classList.add('hidden');
+    if (disconnectButton) disconnectButton.classList.remove('hidden');
+  } else {
+    if (joinSection) joinSection.classList.remove('hidden');
+    if (disconnectButton) disconnectButton.classList.add('hidden');
+  }
 }
 
 function buildIconSet() {
@@ -721,6 +735,8 @@ function ensureSocket() {
       if (inviteButton) inviteButton.classList.remove('hidden');
       const timerBtn = document.getElementById('timer-toggle-btn');
       if (timerBtn) timerBtn.classList.remove('hidden');
+      // Update join/disconnect button visibility
+      updateJoinDisconnectUI();
       setStatus("Disconnected from multiplayer. Starting local game.");
       startGame();
     }
@@ -756,6 +772,8 @@ function ensureSocket() {
         if (connectionInfo) {
           connectionInfo.classList.remove('hidden');
         }
+        // Update join/disconnect button visibility
+        updateJoinDisconnectUI();
         // Hide buttons for non-hosts in multiplayer
         if (!multiplayer.isHost) {
           if (restartButton) restartButton.classList.add('hidden');
@@ -874,6 +892,12 @@ roomInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     const code = roomInput.value.trim().toUpperCase();
     joinMultiplayer(code);
+  }
+});
+
+disconnectButton.addEventListener("click", () => {
+  if (multiplayer.socket && multiplayer.socket.readyState === WebSocket.OPEN) {
+    multiplayer.socket.close();
   }
 });
 

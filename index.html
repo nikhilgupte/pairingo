@@ -80,8 +80,8 @@
         <!-- Invite Players button -->
         <button id="invite-btn" class="secondary-button" type="button">Invite Players</button>
 
-        <!-- Manual room code join (fallback) -->
-        <div class="join-section">
+        <!-- Join room section (shown when not connected) -->
+        <div id="join-section" class="join-section">
           <input
             id="room-input"
             type="text"
@@ -92,6 +92,9 @@
           />
           <button id="join-btn" class="secondary-button" type="button">Join Room</button>
         </div>
+
+        <!-- Disconnect button (shown when connected to a room) -->
+        <button id="disconnect-btn" class="secondary-button hidden" type="button">Disconnect</button>
 
         <!-- Status bar -->
         <div class="status-bar">
