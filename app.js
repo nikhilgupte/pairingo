@@ -46,6 +46,7 @@ let turnTimerInterval = null;
 let turnTimerDisplay = null;
 let localGameSpeedMs = 0;
 let pendingInviteCopy = false;
+let multiplayerTurnTimerStarted = false;
 
 const multiplayer = {
   active: false,
@@ -621,12 +622,18 @@ function applyServerState(state) {
 
   turnCount = state.turnCount || 0;
 
-  clearTurnTimer();
-  if (!state.gameOver && !state.locked) {
-    const currentPlayer = players[currentPlayerIndex];
-    if (currentPlayer && currentPlayer.id === multiplayer.playerId && state.speedMs) {
-      startTurnTimer(state.speedMs);
-    }
+  // Start timer only once when first card in turn is flipped
+  const hasFirstCardFlipped = state.revealed && state.revealed.length === 1;
+  const isCurrentPlayerTurn = players[currentPlayerIndex] && players[currentPlayerIndex].id === multiplayer.playerId;
+
+  if (hasFirstCardFlipped && isCurrentPlayerTurn && state.speedMs && !multiplayerTurnTimerStarted) {
+    // First card just flipped, start the timer
+    multiplayerTurnTimerStarted = true;
+    startTurnTimer(state.speedMs);
+  } else if (!hasFirstCardFlipped) {
+    // No cards revealed yet, reset the flag for next turn
+    multiplayerTurnTimerStarted = false;
+    clearTurnTimer();
   }
 
   renderScoreboard();
@@ -722,6 +729,7 @@ function ensureSocket() {
         setRoomCode(message.roomId);
         updateUrlWithRoom(message.roomId);
         updateMultiplayerControls();
+        multiplayerTurnTimerStarted = false;
         // Hide player count selector in multiplayer mode
         const playerCountSelector = document.querySelector('.player-count-selector');
         if (playerCountSelector) {
