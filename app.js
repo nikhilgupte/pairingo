@@ -558,11 +558,6 @@ function startGame() {
   if (restartButton) {
     restartButton.style.display = 'none';
   }
-  // Ensure timer is enabled by default
-  const timerBtn = document.getElementById('timer-toggle-btn');
-  if (timerBtn && !timerBtn.classList.contains('active')) {
-    timerBtn.classList.add('active');
-  }
   players = Array.from({ length: getPlayerCount() }, (_, index) => ({
     name: `Player ${index + 1}`,
     score: 0,
