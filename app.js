@@ -797,7 +797,9 @@ function fallbackCopyInvite(link) {
 }
 
 function doCopyLink() {
+  // Create clean invite URL with only the room param (no cheat or other params)
   const url = new URL(window.location.href);
+  url.search = ""; // Clear all params
   url.searchParams.set("room", multiplayer.roomId);
   const link = url.toString();
   if (navigator.clipboard && window.isSecureContext) {
