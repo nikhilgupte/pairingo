@@ -705,6 +705,10 @@ function ensureSocket() {
       if (connectionInfo) {
         connectionInfo.classList.add('hidden');
       }
+      // Restore restart button visibility (will be hidden until first card flip)
+      if (restartButton) {
+        restartButton.classList.add('hidden');
+      }
       setStatus("Disconnected from multiplayer. Starting local game.");
       startGame();
     }
@@ -739,6 +743,10 @@ function ensureSocket() {
         const connectionInfo = document.getElementById('connection-info');
         if (connectionInfo) {
           connectionInfo.classList.remove('hidden');
+        }
+        // Hide restart button for non-hosts
+        if (!multiplayer.isHost && restartButton) {
+          restartButton.classList.add('hidden');
         }
         applyServerState(message.state);
         if (pendingInviteCopy) {
@@ -864,7 +872,12 @@ if (restartButton) {
 
 function showRestartButton() {
   if (restartButton) {
-    restartButton.classList.remove('hidden');
+    // Only show restart button for host in multiplayer, always show in local
+    if (multiplayer.active && !multiplayer.isHost) {
+      restartButton.classList.add('hidden');
+    } else {
+      restartButton.classList.remove('hidden');
+    }
   }
 }
 
