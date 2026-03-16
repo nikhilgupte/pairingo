@@ -709,6 +709,10 @@ function ensureSocket() {
       if (restartButton) {
         restartButton.classList.add('hidden');
       }
+      // Re-enable invite and timer buttons in local mode
+      if (inviteButton) inviteButton.disabled = false;
+      const timerBtn = document.getElementById('timer-toggle-btn');
+      if (timerBtn) timerBtn.disabled = false;
       setStatus("Disconnected from multiplayer. Starting local game.");
       startGame();
     }
@@ -747,6 +751,12 @@ function ensureSocket() {
         // Hide restart button for non-hosts
         if (!multiplayer.isHost && restartButton) {
           restartButton.classList.add('hidden');
+        }
+        // Disable invite and timer toggle for non-hosts
+        if (!multiplayer.isHost) {
+          if (inviteButton) inviteButton.disabled = true;
+          const timerBtn = document.getElementById('timer-toggle-btn');
+          if (timerBtn) timerBtn.disabled = true;
         }
         applyServerState(message.state);
         if (pendingInviteCopy) {
