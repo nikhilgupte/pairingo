@@ -622,17 +622,21 @@ function applyServerState(state) {
 
   turnCount = state.turnCount || 0;
 
-  // Start timer only once when first card in turn is flipped
+  // Start timer only once when first card in turn is flipped (and timer is enabled)
   const hasFirstCardFlipped = state.revealed && state.revealed.length === 1;
   const isCurrentPlayerTurn = players[currentPlayerIndex] && players[currentPlayerIndex].id === multiplayer.playerId;
+  const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
 
-  if (hasFirstCardFlipped && isCurrentPlayerTurn && state.speedMs && !multiplayerTurnTimerStarted) {
-    // First card just flipped, start the timer
+  if (hasFirstCardFlipped && isCurrentPlayerTurn && state.speedMs && timerEnabled && !multiplayerTurnTimerStarted) {
+    // First card just flipped, start the timer (only if timer is enabled)
     multiplayerTurnTimerStarted = true;
     startTurnTimer(state.speedMs);
   } else if (!hasFirstCardFlipped) {
     // No cards revealed yet, reset the flag for next turn
     multiplayerTurnTimerStarted = false;
+    clearTurnTimer();
+  } else if (!timerEnabled) {
+    // Timer is disabled, ensure it's cleared
     clearTurnTimer();
   }
 
