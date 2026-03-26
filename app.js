@@ -1,23 +1,28 @@
 const TOTAL_PAIRS = 18;
 const OBJECT_TYPES = [
-  "pizza",
-  "burger",
-  "cookie",
-  "dog",
-  "cat",
-  "butterfly",
-  "soccer",
-  "football",
-  "video game",
-  "guitar",
-  "wrench",
-  "hammer",
-  "computer",
-  "phone",
-  "tree",
-  "sunflower",
-  "airplane",
-  "circus",
+  // Food & Drink
+  "pizza", "burger", "cookie", "fries", "taco", "popcorn", "cupcake",
+  "apple", "banana", "carrot", "milk", "tea",
+  // Animals
+  "dog", "cat", "butterfly", "elephant", "penguin", "lion", "frog",
+  "turtle", "eagle", "octopus", "fish", "duck",
+  // Sports & Activities
+  "soccer", "football", "baseball", "volleyball", "ping pong",
+  // Recreation & Games
+  "video game", "dice", "target", "pool ball", "bowling", "circus",
+  "guitar", "trumpet", "violin", "microphone",
+  // Objects & Tools
+  "wrench", "hammer", "screwdriver", "gear", "key", "bucket", "magnet",
+  "computer", "phone", "keyboard", "mouse", "camera",
+  // Nature & Weather
+  "tree", "sunflower", "flower", "rainbow", "sun", "moon", "star",
+  "ocean", "fire", "ice",
+  // Travel & Vehicles
+  "train", "airplane", "rocket", "ship", "sailboat", "helicopter",
+  // Clothing & Accessories
+  "hat", "jacket", "socks", "backpack", "ring", "watch", "sunglasses",
+  // Household
+  "bed", "couch", "door", "flashlight", "bulb", "candle", "broom", "basket",
 ];
 
 const board = document.getElementById("game-board");
@@ -109,7 +114,8 @@ function updateJoinDisconnectUI() {
 }
 
 function buildIconSet() {
-  return OBJECT_TYPES.slice(0, TOTAL_PAIRS).map((name, index) => ({
+  const shuffled = shuffle([...OBJECT_TYPES]);
+  return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({
     id: index,
     name,
   }));
@@ -117,24 +123,37 @@ function buildIconSet() {
 
 function getEmojiForIcon(type) {
   const emojiMap = {
-    pizza: "🍕",
-    burger: "🍔",
-    cookie: "🍪",
-    dog: "🐕",
-    cat: "🐈",
-    butterfly: "🦋",
-    soccer: "⚽",
-    football: "🏈",
-    "video game": "🎮",
-    guitar: "🎸",
-    wrench: "🔧",
-    hammer: "🔨",
-    computer: "💻",
-    phone: "📱",
-    tree: "🌲",
-    sunflower: "🌻",
-    airplane: "✈️",
-    circus: "🎪",
+    // Food & Drink
+    pizza: "🍕", burger: "🍔", cookie: "🍪", fries: "🍟", taco: "🌮",
+    popcorn: "🍿", cupcake: "🧁", apple: "🍎", banana: "🍌", carrot: "🥕",
+    milk: "🥛", tea: "🍵",
+    // Animals
+    dog: "🐕", cat: "🐈", butterfly: "🦋", elephant: "🐘", penguin: "🐧",
+    lion: "🦁", frog: "🐸", turtle: "🐢", eagle: "🦅", octopus: "🐙",
+    fish: "🐠", duck: "🦆",
+    // Sports & Activities
+    soccer: "⚽", football: "🏈", baseball: "⚾", volleyball: "🏐",
+    "ping pong": "🏓",
+    // Recreation & Games
+    "video game": "🎮", dice: "🎲", target: "🎯", "pool ball": "🎱",
+    bowling: "🎳", circus: "🎪", guitar: "🎸", trumpet: "🎺",
+    violin: "🎻", microphone: "🎤",
+    // Objects & Tools
+    wrench: "🔧", hammer: "🔨", screwdriver: "🪛", gear: "⚙️", key: "🔑",
+    bucket: "🪣", magnet: "🧲", computer: "💻", phone: "📱",
+    keyboard: "⌨️", mouse: "🖱️", camera: "📷",
+    // Nature & Weather
+    tree: "🌲", sunflower: "🌻", flower: "🌺", rainbow: "🌈", sun: "☀️",
+    moon: "🌙", star: "⭐", ocean: "🌊", fire: "🔥", ice: "🧊",
+    // Travel & Vehicles
+    train: "🚂", airplane: "✈️", rocket: "🚀", ship: "🚢",
+    sailboat: "⛵", helicopter: "🚁",
+    // Clothing & Accessories
+    hat: "👒", jacket: "🧥", socks: "🧦", backpack: "👝", ring: "💍",
+    watch: "⌚", sunglasses: "🕶️",
+    // Household
+    bed: "🛏️", couch: "🛋️", door: "🚪", flashlight: "🔦", bulb: "💡",
+    candle: "🕯️", broom: "🧹", basket: "🧺",
   };
   return emojiMap[type] || "❓";
 }
