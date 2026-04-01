@@ -76,6 +76,27 @@ const CREEPY_CRAWLIES_ICONS = [
   { name: "octopus", type: "emoji", value: "🐙", label: "Octopus" },
 ];
 
+const DINO_ICONS = [
+  { name: "tyrannosaurus", type: "image", value: "dinos/tyrannosaurus.svg", label: "T-Rex" },
+  { name: "stegosaurus", type: "image", value: "dinos/stegosaurus.svg", label: "Stegosaurus" },
+  { name: "ankylosaurus", type: "image", value: "dinos/ankylosaurus.svg", label: "Ankylosaurus" },
+  { name: "spinosaurus", type: "image", value: "dinos/spinosaurus.svg", label: "Spinosaurus" },
+  { name: "coelophysis", type: "image", value: "dinos/coelophysis.svg", label: "Coelophysis" },
+  { name: "acrocanthosaurus", type: "image", value: "dinos/acrocanthosaurus.svg", label: "Acrocanthosaurus" },
+  { name: "eoraptor", type: "image", value: "dinos/eoraptor.svg", label: "Eoraptor" },
+  { name: "edmontosaurus", type: "image", value: "dinos/edmontosaurus.svg", label: "Edmontosaurus" },
+  { name: "kentrosaurus", type: "image", value: "dinos/kentrosaurus.svg", label: "Kentrosaurus" },
+  { name: "camarasaurus", type: "image", value: "dinos/camarasaurus.svg", label: "Camarasaurus" },
+  { name: "parasaurolophus", type: "image", value: "dinos/parasaurolophus.svg", label: "Parasaurolophus" },
+  { name: "iguanodon", type: "image", value: "dinos/iguanodon.svg", label: "Iguanodon" },
+  { name: "diplodocus", type: "image", value: "dinos/diplodocus.svg", label: "Diplodocus" },
+  { name: "brachiosaurus", type: "image", value: "dinos/brachiosaurus.svg", label: "Brachiosaurus" },
+  { name: "velociraptor", type: "image", value: "dinos/velociraptor.svg", label: "Velociraptor" },
+  { name: "triceratops", type: "image", value: "dinos/triceratops.svg", label: "Triceratops" },
+  { name: "deinonychus", type: "image", value: "dinos/deinonychus.svg", label: "Deinonychus" },
+  { name: "sauropod", type: "emoji", value: "🦕", label: "Sauropod" },
+];
+
 const board = document.getElementById("game-board");
 const statusText = document.getElementById("status");
 const inviteButton = document.getElementById("invite-btn");
@@ -176,6 +197,10 @@ function buildIconSet() {
     const shuffled = shuffle([...CREEPY_CRAWLIES_ICONS]);
     return shuffled.slice(0, TOTAL_PAIRS).map((bug, index) => ({ id: index, name: bug.name }));
   }
+  if (currentEdition === "dinos") {
+    const shuffled = shuffle([...DINO_ICONS]);
+    return shuffled.slice(0, TOTAL_PAIRS).map((dino, index) => ({ id: index, name: dino.name }));
+  }
   const shuffled = shuffle([...OBJECT_TYPES]);
   return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({ id: index, name }));
 }
@@ -231,6 +256,14 @@ function createIconData(icon) {
   if (currentEdition === "bugs") {
     const bug = CREEPY_CRAWLIES_ICONS.find(b => b.name === icon.name);
     if (bug) return { image: bug.value, flagSrc: null, label: bug.label };
+  }
+  if (currentEdition === "dinos") {
+    const dino = DINO_ICONS.find(d => d.name === icon.name);
+    if (dino) return {
+      image: dino.type === "emoji" ? dino.value : null,
+      flagSrc: dino.type === "image" ? dino.value : null,
+      label: dino.label,
+    };
   }
   return { image: getEmojiForIcon(icon.name), flagSrc: null, label: `${icon.name} icon` };
 }
@@ -327,7 +360,7 @@ function renderBoard() {
     const backContent = card.flagSrc
       ? `<img src="${card.flagSrc}" alt="${card.label}" class="flag-img">`
       : (card.image || "❓");
-    const showLabel = currentEdition === "flags" || currentEdition === "bugs";
+    const showLabel = currentEdition === "flags" || currentEdition === "bugs" || currentEdition === "dinos";
     const cardLabel = showLabel ? `<span class="flag-label">${card.label}</span>` : "";
     button.innerHTML =
       `<span class="card-face card-front ${currentCardBackPattern}" style="background-color: ${currentCardBackColor}; --card-color: ${currentCardBackColor};">${frontText}</span>` +
@@ -605,6 +638,9 @@ function startGame() {
     currentCardBackColor = "transparent";
   } else if (currentEdition === "bugs") {
     currentCardBackPattern = "pattern-bugs";
+    currentCardBackColor = "transparent";
+  } else if (currentEdition === "dinos") {
+    currentCardBackPattern = "pattern-dinos";
     currentCardBackColor = "transparent";
   } else {
     currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
