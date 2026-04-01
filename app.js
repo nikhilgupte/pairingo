@@ -25,6 +25,34 @@ const OBJECT_TYPES = [
   "bed", "couch", "door", "flashlight", "bulb", "candle", "broom", "basket",
 ];
 
+const FLAG_ICONS = [
+  // Country flags (emoji)
+  { name: "usa", type: "emoji", value: "🇺🇸", label: "United States" },
+  { name: "uk", type: "emoji", value: "🇬🇧", label: "United Kingdom" },
+  { name: "france", type: "emoji", value: "🇫🇷", label: "France" },
+  { name: "germany", type: "emoji", value: "🇩🇪", label: "Germany" },
+  { name: "japan", type: "emoji", value: "🇯🇵", label: "Japan" },
+  { name: "brazil", type: "emoji", value: "🇧🇷", label: "Brazil" },
+  { name: "australia", type: "emoji", value: "🇦🇺", label: "Australia" },
+  { name: "india", type: "emoji", value: "🇮🇳", label: "India" },
+  { name: "mexico", type: "emoji", value: "🇲🇽", label: "Mexico" },
+  { name: "spain", type: "emoji", value: "🇪🇸", label: "Spain" },
+  { name: "italy", type: "emoji", value: "🇮🇹", label: "Italy" },
+  { name: "pride", type: "emoji", value: "🏳️‍🌈", label: "Pride" },
+  // Canadian provincial / city flags (image files)
+  { name: "ontario", type: "image", value: "flags/ontario.svg", label: "Ontario" },
+  { name: "quebec", type: "image", value: "flags/quebec.svg", label: "Québec" },
+  { name: "britishcolumbia", type: "image", value: "flags/britishcolumbia.svg", label: "British Columbia" },
+  { name: "alberta", type: "image", value: "flags/alberta.svg", label: "Alberta" },
+  { name: "manitoba", type: "image", value: "flags/manitoba.svg", label: "Manitoba" },
+  { name: "saskatchewan", type: "image", value: "flags/saskatchewan.svg", label: "Saskatchewan" },
+  { name: "novascotia", type: "image", value: "flags/novascotia.svg", label: "Nova Scotia" },
+  { name: "newbrunswick", type: "image", value: "flags/newbrunswick.svg", label: "New Brunswick" },
+  { name: "newfoundland", type: "image", value: "flags/newfoundland.svg", label: "Newfoundland" },
+  { name: "pei", type: "image", value: "flags/pei.svg", label: "PEI" },
+  { name: "toronto", type: "image", value: "flags/toronto.svg", label: "Toronto" },
+];
+
 const board = document.getElementById("game-board");
 const statusText = document.getElementById("status");
 const inviteButton = document.getElementById("invite-btn");
@@ -56,6 +84,7 @@ let pendingInviteCopy = false;
 let multiplayerTurnTimerStarted = false;
 let currentCardBackPattern = "";
 let currentCardBackColor = "";
+let currentEdition = "default";
 
 const CARD_BACK_PATTERNS = ["pattern-lines", "pattern-dots", "pattern-grid", "pattern-solid"];
 
@@ -114,11 +143,14 @@ function updateJoinDisconnectUI() {
 }
 
 function buildIconSet() {
+  if (currentEdition === "flags") {
+    const pride = FLAG_ICONS.find(f => f.name === "pride");
+    const rest = shuffle(FLAG_ICONS.filter(f => f.name !== "pride"));
+    const selected = shuffle([pride, ...rest.slice(0, TOTAL_PAIRS - 1)]);
+    return selected.map((flag, index) => ({ id: index, name: flag.name }));
+  }
   const shuffled = shuffle([...OBJECT_TYPES]);
-  return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({
-    id: index,
-    name,
-  }));
+  return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({ id: index, name }));
 }
 
 function getEmojiForIcon(type) {
@@ -159,7 +191,17 @@ function getEmojiForIcon(type) {
 }
 
 function createIconData(icon) {
-  return getEmojiForIcon(icon.name);
+  if (currentEdition === "flags") {
+    const flag = FLAG_ICONS.find(f => f.name === icon.name);
+    if (flag) {
+      return {
+        image: flag.type === "emoji" ? flag.value : null,
+        flagSrc: flag.type === "image" ? flag.value : null,
+        label: flag.label,
+      };
+    }
+  }
+  return { image: getEmojiForIcon(icon.name), flagSrc: null, label: `${icon.name} icon` };
 }
 
 function shuffle(array) {
@@ -175,12 +217,13 @@ function buildDeckFromOrder(order) {
   const icons = buildIconSet();
   return order.map((matchId, index) => {
     const icon = icons[matchId];
-    const image = createIconData(icon);
+    const iconData = createIconData(icon);
     return {
       id: index,
       matchId,
-      image,
-      label: `${icon.name} icon`,
+      image: iconData.image,
+      flagSrc: iconData.flagSrc,
+      label: iconData.label,
       matched: false,
       flipped: false,
     };
@@ -250,9 +293,15 @@ function renderBoard() {
     const offsetX = (Math.random() * 2 - 1); // -1 to +1 pixels
     const offsetY = (Math.random() * 2 - 1); // -1 to +1 pixels
     button.style.transform = `rotate(${rotation}deg) translate(${offsetX}px, ${offsetY}px)`;
+    const backContent = card.flagSrc
+      ? `<img src="${card.flagSrc}" alt="${card.label}" class="flag-img">`
+      : (card.image || "❓");
+    const flagLabel = currentEdition === "flags"
+      ? `<span class="flag-label">${card.label}</span>`
+      : "";
     button.innerHTML =
       `<span class="card-face card-front ${currentCardBackPattern}" style="background-color: ${currentCardBackColor}; --card-color: ${currentCardBackColor};">${frontText}</span>` +
-      `<span class="card-face card-back emoji-icon">${card.image}</span>`;
+      `<span class="card-face card-back emoji-icon${currentEdition === "flags" ? " flag-card" : ""}">${backContent}${flagLabel}</span>`;
     if (cheatMode) {
       button.classList.add('cheat-mode');
     }
@@ -520,9 +569,14 @@ function startGame() {
   matchedPairs = 0;
   multiplayerGameOver = false;
   turnCount = 0;
-  // Pick a random card back pattern and color for this game
-  currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
-  currentCardBackColor = getRandomDarkColor();
+  // Pick card back pattern and color for this game
+  if (currentEdition === "flags") {
+    currentCardBackPattern = "pattern-flags";
+    currentCardBackColor = "transparent";
+  } else {
+    currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
+    currentCardBackColor = getRandomDarkColor();
+  }
   deck = createDeck();
   currentDeckSignature = "";
 
@@ -906,6 +960,17 @@ const cheatModeCheckbox = document.getElementById('cheat-mode');
 if (cheatParam === "on" && cheatModeCheckbox) {
   cheatModeCheckbox.checked = true;
 }
+
+// Switch edition
+document.querySelectorAll(".edition-pill").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (multiplayer.active) return;
+    document.querySelectorAll(".edition-pill").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentEdition = btn.dataset.edition;
+    startGame();
+  });
+});
 
 // Restart game when player count changes
 playerCountInputs.forEach((input) => {

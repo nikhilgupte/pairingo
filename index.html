@@ -27,27 +27,6 @@
       </header>
 
       <section class="controls" aria-label="Game controls">
-        <!-- Hidden radio inputs for app.js compatibility -->
-        <fieldset class="hidden-fieldset" aria-hidden="true">
-          <legend>Players (1-4)</legend>
-          <label>
-            <input type="radio" name="player-count" value="1" />
-            1 player
-          </label>
-          <label>
-            <input type="radio" name="player-count" value="2" checked />
-            2 players
-          </label>
-          <label>
-            <input type="radio" name="player-count" value="3" />
-            3 players
-          </label>
-          <label>
-            <input type="radio" name="player-count" value="4" />
-            4 players
-          </label>
-        </fieldset>
-
         <!-- Timer toggle -->
         <button id="timer-toggle-btn" class="icon-toggle active" title="Time to think fast! (12s → 3s)" aria-label="Toggle timer">⏱️</button>
 
@@ -75,6 +54,12 @@
             <input type="radio" name="player-count" value="4" />
             <span>4</span>
           </label>
+        </div>
+
+        <!-- Edition selector -->
+        <div class="edition-selector">
+          <button class="edition-pill active" data-edition="default">Classic</button>
+          <button class="edition-pill" data-edition="flags">Flags 🌍</button>
         </div>
 
         <!-- Invite Players button -->

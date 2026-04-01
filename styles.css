@@ -185,6 +185,66 @@ body {
   border-color: var(--primary);
 }
 
+/* Edition selector */
+.edition-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.edition-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border: 2px solid #dde1e9;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.edition-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.edition-pill:hover:not(.active) {
+  border-color: var(--primary);
+}
+
+/* Flag images inside card backs */
+.flag-img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  pointer-events: none;
+  display: block;
+}
+
+.card-back.flag-card {
+  flex-direction: column !important;
+  gap: 6px;
+  font-size: 52px !important;
+}
+
+.flag-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* Start button */
 .start-button {
   width: 100%;
@@ -638,6 +698,26 @@ input[name="turn-speed"] {
     rgba(255, 255, 255, 0.12) 10px,
     rgba(255, 255, 255, 0.12) 12px
   ) !important;
+}
+
+.card-front.pattern-flags {
+  background-color: #0c1f3f !important;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) !important;
+  background-size: 18px 18px !important;
+}
+
+.card-front.pattern-flags::after {
+  content: "🌍";
+  position: absolute;
+  font-size: 72px;
+  opacity: 0.18;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  line-height: 1;
 }
 
 .card-back img {
