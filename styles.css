@@ -720,6 +720,25 @@ input[name="turn-speed"] {
   line-height: 1;
 }
 
+.card-front.pattern-bugs {
+  background-color: #1a2e12 !important;
+  background-image:
+    repeating-conic-gradient(rgba(255,255,255,0.06) 0deg, transparent 1deg, transparent 30deg) !important;
+  background-size: 100% 100% !important;
+}
+
+.card-front.pattern-bugs::after {
+  content: "🕸️";
+  position: absolute;
+  font-size: 80px;
+  opacity: 0.15;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  line-height: 1;
+}
+
 .card-back img {
   width: 60%;
   height: 60%;

@@ -53,6 +53,29 @@ const FLAG_ICONS = [
   { name: "toronto", type: "image", value: "flags/toronto.svg", label: "Toronto" },
 ];
 
+const CREEPY_CRAWLIES_ICONS = [
+  { name: "caterpillar", type: "emoji", value: "🐛", label: "Caterpillar" },
+  { name: "butterfly", type: "emoji", value: "🦋", label: "Butterfly" },
+  { name: "bee", type: "emoji", value: "🐝", label: "Bee" },
+  { name: "ladybug", type: "emoji", value: "🐞", label: "Ladybug" },
+  { name: "cricket", type: "emoji", value: "🦗", label: "Cricket" },
+  { name: "spider", type: "emoji", value: "🕷️", label: "Spider" },
+  { name: "scorpion", type: "emoji", value: "🦂", label: "Scorpion" },
+  { name: "ant", type: "emoji", value: "🐜", label: "Ant" },
+  { name: "mosquito", type: "emoji", value: "🦟", label: "Mosquito" },
+  { name: "beetle", type: "emoji", value: "🪲", label: "Beetle" },
+  { name: "cockroach", type: "emoji", value: "🪳", label: "Cockroach" },
+  { name: "fly", type: "emoji", value: "🪰", label: "Fly" },
+  { name: "worm", type: "emoji", value: "🪱", label: "Worm" },
+  { name: "snail", type: "emoji", value: "🐌", label: "Snail" },
+  { name: "microbe", type: "emoji", value: "🦠", label: "Microbe" },
+  { name: "lizard", type: "emoji", value: "🦎", label: "Lizard" },
+  { name: "snake", type: "emoji", value: "🐍", label: "Snake" },
+  { name: "crab", type: "emoji", value: "🦀", label: "Crab" },
+  { name: "squid", type: "emoji", value: "🦑", label: "Squid" },
+  { name: "octopus", type: "emoji", value: "🐙", label: "Octopus" },
+];
+
 const board = document.getElementById("game-board");
 const statusText = document.getElementById("status");
 const inviteButton = document.getElementById("invite-btn");
@@ -149,6 +172,10 @@ function buildIconSet() {
     const selected = shuffle([pride, ...rest.slice(0, TOTAL_PAIRS - 1)]);
     return selected.map((flag, index) => ({ id: index, name: flag.name }));
   }
+  if (currentEdition === "bugs") {
+    const shuffled = shuffle([...CREEPY_CRAWLIES_ICONS]);
+    return shuffled.slice(0, TOTAL_PAIRS).map((bug, index) => ({ id: index, name: bug.name }));
+  }
   const shuffled = shuffle([...OBJECT_TYPES]);
   return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({ id: index, name }));
 }
@@ -200,6 +227,10 @@ function createIconData(icon) {
         label: flag.label,
       };
     }
+  }
+  if (currentEdition === "bugs") {
+    const bug = CREEPY_CRAWLIES_ICONS.find(b => b.name === icon.name);
+    if (bug) return { image: bug.value, flagSrc: null, label: bug.label };
   }
   return { image: getEmojiForIcon(icon.name), flagSrc: null, label: `${icon.name} icon` };
 }
@@ -296,12 +327,11 @@ function renderBoard() {
     const backContent = card.flagSrc
       ? `<img src="${card.flagSrc}" alt="${card.label}" class="flag-img">`
       : (card.image || "❓");
-    const flagLabel = currentEdition === "flags"
-      ? `<span class="flag-label">${card.label}</span>`
-      : "";
+    const showLabel = currentEdition === "flags" || currentEdition === "bugs";
+    const cardLabel = showLabel ? `<span class="flag-label">${card.label}</span>` : "";
     button.innerHTML =
       `<span class="card-face card-front ${currentCardBackPattern}" style="background-color: ${currentCardBackColor}; --card-color: ${currentCardBackColor};">${frontText}</span>` +
-      `<span class="card-face card-back emoji-icon${currentEdition === "flags" ? " flag-card" : ""}">${backContent}${flagLabel}</span>`;
+      `<span class="card-face card-back emoji-icon${showLabel ? " flag-card" : ""}">${backContent}${cardLabel}</span>`;
     if (cheatMode) {
       button.classList.add('cheat-mode');
     }
@@ -572,6 +602,9 @@ function startGame() {
   // Pick card back pattern and color for this game
   if (currentEdition === "flags") {
     currentCardBackPattern = "pattern-flags";
+    currentCardBackColor = "transparent";
+  } else if (currentEdition === "bugs") {
+    currentCardBackPattern = "pattern-bugs";
     currentCardBackColor = "transparent";
   } else {
     currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
