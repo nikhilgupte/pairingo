@@ -301,8 +301,12 @@ function renderScoreboard() {
 let audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
   return audioCtx;
 }
+
+// iOS Safari requires AudioContext to be resumed inside a user gesture
+document.addEventListener("touchstart", () => getAudioCtx(), { once: true });
 
 function playTone({ frequency = 440, type = "sine", duration = 0.15, gain = 0.3, delay = 0 } = {}) {
   const ctx = getAudioCtx();
