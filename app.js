@@ -296,6 +296,21 @@ function renderScoreboard() {
   });
 }
 
+function speak(text) {
+  if (!window.speechSynthesis || currentEdition === "default") return;
+  const say = () => {
+    window.speechSynthesis.resume();
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  };
+  if (window.speechSynthesis.getVoices().length > 0) {
+    say();
+  } else {
+    let spoke = false;
+    window.speechSynthesis.addEventListener("voiceschanged", () => { spoke = true; say(); }, { once: true });
+    setTimeout(() => { if (!spoke) say(); }, 500);
+  }
+}
+
 function getRandomDarkColor() {
   // Generate random dark colors (hues 0-360, low saturation for dark tones)
   const hue = Math.floor(Math.random() * 360);
@@ -548,6 +563,8 @@ function handleCardSelection(index) {
 
   card.flipped = true;
   updateCardUI(index);
+  const isMatch = firstSelection !== null && deck[firstSelection].matchId === card.matchId;
+  speak(isMatch ? "Pairingo!" : card.label);
 
   if (firstSelection === null) {
     // Show restart button on first card flip
@@ -994,6 +1011,17 @@ if (cheatParam === "on" && cheatModeCheckbox) {
   cheatModeCheckbox.checked = true;
 }
 
+// Restore saved edition
+const savedEdition = localStorage.getItem("edition");
+if (savedEdition) {
+  const pill = document.querySelector(`.edition-pill[data-edition="${savedEdition}"]`);
+  if (pill) {
+    document.querySelectorAll(".edition-pill").forEach(b => b.classList.remove("active"));
+    pill.classList.add("active");
+    currentEdition = savedEdition;
+  }
+}
+
 // Switch edition
 document.querySelectorAll(".edition-pill").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -1001,6 +1029,7 @@ document.querySelectorAll(".edition-pill").forEach(btn => {
     document.querySelectorAll(".edition-pill").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentEdition = btn.dataset.edition;
+    localStorage.setItem("edition", currentEdition);
     startGame();
   });
 });
