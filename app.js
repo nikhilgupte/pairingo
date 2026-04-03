@@ -300,7 +300,10 @@ function speak(text) {
   if (!window.speechSynthesis || currentEdition === "default") return;
   const say = () => {
     window.speechSynthesis.resume();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    const utterance = new SpeechSynthesisUtterance(text);
+    const karen = window.speechSynthesis.getVoices().find(v => v.name === "Karen");
+    if (karen) utterance.voice = karen;
+    window.speechSynthesis.speak(utterance);
   };
   if (window.speechSynthesis.getVoices().length > 0) {
     say();
@@ -564,7 +567,8 @@ function handleCardSelection(index) {
   card.flipped = true;
   updateCardUI(index);
   const isMatch = firstSelection !== null && deck[firstSelection].matchId === card.matchId;
-  speak(isMatch ? "Pairingo!" : card.label);
+  const matchText = card.label === "Octopus" ? "aww, pink baby octopus" : "Pair ringo!";
+  speak(isMatch ? matchText : card.label);
 
   if (firstSelection === null) {
     // Show restart button on first card flip
@@ -1045,3 +1049,4 @@ playerCountInputs.forEach((input) => {
 
 updateMultiplayerControls();
 startGame();
+
