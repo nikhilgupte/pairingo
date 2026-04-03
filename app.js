@@ -102,6 +102,7 @@ let currentDeckSignature = "";
 let turnCount = 0;
 let turnTimerInterval = null;
 let turnTimerDisplay = null;
+let tickInterval = null;
 let localGameSpeedMs = 0;
 let pendingInviteCopy = false;
 let multiplayerTurnTimerStarted = false;
@@ -173,8 +174,9 @@ function buildIconSet() {
     return selected.map((flag, index) => ({ id: index, name: flag.name }));
   }
   if (currentEdition === "bugs") {
-    const shuffled = shuffle([...CREEPY_CRAWLIES_ICONS]);
-    return shuffled.slice(0, TOTAL_PAIRS).map((bug, index) => ({ id: index, name: bug.name }));
+    const others = shuffle(CREEPY_CRAWLIES_ICONS.filter(b => b.name !== "octopus"));
+    const selected = [CREEPY_CRAWLIES_ICONS.find(b => b.name === "octopus"), ...others.slice(0, TOTAL_PAIRS - 1)];
+    return selected.map((bug, index) => ({ id: index, name: bug.name }));
   }
   const shuffled = shuffle([...OBJECT_TYPES]);
   return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({ id: index, name }));
@@ -296,8 +298,52 @@ function renderScoreboard() {
   });
 }
 
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone({ frequency = 440, type = "sine", duration = 0.15, gain = 0.3, delay = 0 } = {}) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const vol = ctx.createGain();
+  osc.connect(vol);
+  vol.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, ctx.currentTime + delay);
+  vol.gain.setValueAtTime(gain, ctx.currentTime + delay);
+  vol.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+  osc.start(ctx.currentTime + delay);
+  osc.stop(ctx.currentTime + delay + duration);
+}
+
+const sfx = {
+  flip() {
+    playTone({ frequency: 600, type: "sine", duration: 0.08, gain: 0.2 });
+  },
+  match() {
+    playTone({ frequency: 523, duration: 0.12, gain: 0.3 });
+    playTone({ frequency: 659, duration: 0.12, gain: 0.3, delay: 0.1 });
+    playTone({ frequency: 784, duration: 0.2,  gain: 0.3, delay: 0.2 });
+  },
+  miss() {
+    playTone({ frequency: 330, type: "sawtooth", duration: 0.12, gain: 0.2 });
+    playTone({ frequency: 220, type: "sawtooth", duration: 0.18, gain: 0.2, delay: 0.1 });
+  },
+  tick() {
+    playTone({ frequency: 1200, type: "square", duration: 0.04, gain: 0.1 });
+  },
+  timerOut() {
+    playTone({ frequency: 440, type: "sawtooth", duration: 0.15, gain: 0.3 });
+    playTone({ frequency: 370, type: "sawtooth", duration: 0.15, gain: 0.3, delay: 0.15 });
+    playTone({ frequency: 311, type: "sawtooth", duration: 0.3,  gain: 0.3, delay: 0.3 });
+  },
+};
+
 function speak(text) {
   if (!window.speechSynthesis || currentEdition === "default") return;
+  if (!document.getElementById("speech-toggle")?.checked) return;
   const say = () => {
     window.speechSynthesis.resume();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -408,6 +454,7 @@ function endGame() {
 }
 
 function handleMatch(firstIndex, secondIndex) {
+  sfx.match();
   clearTurnTimer();
   deck[firstIndex].matched = true;
   deck[secondIndex].matched = true;
@@ -434,6 +481,7 @@ function handleMatch(firstIndex, secondIndex) {
 }
 
 function handleMismatch(firstIndex, secondIndex) {
+  sfx.miss();
   clearTurnTimer();
   const message =
     players.length === 1 ? "No match. Try again." : "No match. Next player's turn.";
@@ -495,6 +543,18 @@ function startTurnTimer(ms) {
     }
   }, 50);
 
+  {
+    const scheduleTick = () => {
+      const remaining = Math.max(0, ms - (Date.now() - start));
+      const delay = 100 + (remaining / ms) * 900; // 1000ms at start → 100ms at end
+      tickInterval = setTimeout(() => {
+        sfx.tick();
+        if (remaining > 0) scheduleTick();
+      }, delay);
+    };
+    scheduleTick();
+  }
+
   turnTimerInterval = setTimeout(() => {
     console.log('Timer expired!');
     clearTurnTimer();
@@ -507,6 +567,7 @@ function startTurnTimer(ms) {
 }
 
 function handleTimeoutTurn() {
+  sfx.timerOut();
   if (firstSelection !== null) {
     // Flip back any revealed card
     deck[firstSelection].flipped = false;
@@ -527,6 +588,10 @@ function handleTimeoutTurn() {
 }
 
 function clearTurnTimer() {
+  if (tickInterval) {
+    clearTimeout(tickInterval);
+    tickInterval = null;
+  }
   if (turnTimerDisplay) {
     clearInterval(turnTimerDisplay);
     turnTimerDisplay = null;
@@ -567,10 +632,11 @@ function handleCardSelection(index) {
   card.flipped = true;
   updateCardUI(index);
   const isMatch = firstSelection !== null && deck[firstSelection].matchId === card.matchId;
-  const matchText = card.label === "Octopus" ? "aww, pink baby octopus" : "Pair ringo!";
+  const matchText = card.label === "Octopus" ? "AWWWW, Pink baby octopus!" : "Pair ringo!";
   speak(isMatch ? matchText : card.label);
 
   if (firstSelection === null) {
+    sfx.flip();
     // Show restart button on first card flip
     showRestartButton();
     // Increment turn counter when a new turn starts
@@ -582,7 +648,7 @@ function handleCardSelection(index) {
       // Calculate time based on pairs discovered: 8s at start, 3s when all pairs found
       const pairsDiscovered = matchedPairs;
       const timeSeconds = Math.max(3, 8 - (pairsDiscovered / TOTAL_PAIRS) * 5);
-      const timeMs = timeSeconds * 1000;
+      const timeMs = timeSeconds * 1000 * 0.8;
       console.log('Pairs discovered:', pairsDiscovered, 'Time per turn:', timeSeconds, 's');
       startTurnTimer(timeMs);
     }
@@ -620,6 +686,7 @@ function startGame() {
   matchedPairs = 0;
   multiplayerGameOver = false;
   turnCount = 0;
+  clearTurnTimer();
   // Pick card back pattern and color for this game
   if (currentEdition === "flags") {
     currentCardBackPattern = "pattern-flags";
@@ -1023,6 +1090,7 @@ if (savedEdition) {
     document.querySelectorAll(".edition-pill").forEach(b => b.classList.remove("active"));
     pill.classList.add("active");
     currentEdition = savedEdition;
+    document.getElementById("speech-toggle-label")?.classList.toggle("hidden", currentEdition === "default");
   }
 }
 
@@ -1034,6 +1102,7 @@ document.querySelectorAll(".edition-pill").forEach(btn => {
     btn.classList.add("active");
     currentEdition = btn.dataset.edition;
     localStorage.setItem("edition", currentEdition);
+    document.getElementById("speech-toggle-label")?.classList.toggle("hidden", currentEdition === "default");
     startGame();
   });
 });

@@ -185,6 +185,16 @@ body {
   border-color: var(--primary);
 }
 
+.speech-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
 /* Edition selector */
 .edition-selector {
   display: flex;
