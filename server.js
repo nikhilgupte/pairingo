@@ -100,6 +100,7 @@ function buildState(room) {
     turnCount: room.turnCount,
     speedMs: speedMs,
     edition: room.edition || "default",
+    iconSeed: room.iconSeed,
   };
 }
 
@@ -148,6 +149,7 @@ function resetRoom(room) {
   }
   clearTurnTimer(room);
   room.seed = createSeed();
+  room.iconSeed = createSeed();
   room.deck = createDeck(room.seed);
   room.matched = new Set();
   room.revealed = [];
@@ -176,9 +178,11 @@ function handleCreateRoom(ws, { speedMs = 0, edition = "default" } = {}) {
   const roomId = createRoomId();
   const seed = createSeed();
   const valid = ["default", "flags", "bugs"];
+  const iconSeed = createSeed();
   const room = {
     id: roomId,
     seed,
+    iconSeed,
     deck: createDeck(seed),
     matched: new Set(),
     revealed: [],

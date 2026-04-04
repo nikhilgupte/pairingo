@@ -166,19 +166,40 @@ function updateJoinDisconnectUI() {
   if (disconnectButton) disconnectButton.classList.toggle('hidden', !inRoom);
 }
 
-function buildIconSet() {
+function mulberry32(seed) {
+  let t = seed;
+  return () => {
+    t += 0x6d2b79f5;
+    let r = Math.imul(t ^ (t >>> 15), t | 1);
+    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(array, rng) {
+  const result = array.slice();
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function buildIconSet(iconSeed) {
+  const rng = iconSeed != null ? mulberry32(iconSeed) : Math.random.bind(Math);
+  const s = arr => iconSeed != null ? seededShuffle(arr, rng) : shuffle(arr);
   if (currentEdition === "flags") {
     const pride = FLAG_ICONS.find(f => f.name === "pride");
-    const rest = shuffle(FLAG_ICONS.filter(f => f.name !== "pride"));
-    const selected = shuffle([pride, ...rest.slice(0, TOTAL_PAIRS - 1)]);
+    const rest = s(FLAG_ICONS.filter(f => f.name !== "pride"));
+    const selected = s([pride, ...rest.slice(0, TOTAL_PAIRS - 1)]);
     return selected.map((flag, index) => ({ id: index, name: flag.name }));
   }
   if (currentEdition === "bugs") {
-    const others = shuffle(CREEPY_CRAWLIES_ICONS.filter(b => b.name !== "octopus"));
+    const others = s(CREEPY_CRAWLIES_ICONS.filter(b => b.name !== "octopus"));
     const selected = [CREEPY_CRAWLIES_ICONS.find(b => b.name === "octopus"), ...others.slice(0, TOTAL_PAIRS - 1)];
     return selected.map((bug, index) => ({ id: index, name: bug.name }));
   }
-  const shuffled = shuffle([...OBJECT_TYPES]);
+  const shuffled = s([...OBJECT_TYPES]);
   return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({ id: index, name }));
 }
 
@@ -246,8 +267,8 @@ function shuffle(array) {
   return result;
 }
 
-function buildDeckFromOrder(order) {
-  const icons = buildIconSet();
+function buildDeckFromOrder(order, iconSeed) {
+  const icons = buildIconSet(iconSeed);
   return order.map((matchId, index) => {
     const icon = icons[matchId];
     const iconData = createIconData(icon);
@@ -741,7 +762,7 @@ function applyServerState(state) {
   const editionChanged = applyEdition(state.edition);
   const signature = state.deck.join(",");
   if (signature !== currentDeckSignature || editionChanged) {
-    deck = buildDeckFromOrder(state.deck);
+    deck = buildDeckFromOrder(state.deck, state.iconSeed);
     currentDeckSignature = signature;
     // Generate a new color and pattern for each new game
     currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
