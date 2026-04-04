@@ -479,7 +479,8 @@ input[name="turn-speed"] {
 /* Connection info */
 .connection-info {
   margin: 0;
-  padding: 0;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
   background: transparent;
   border-radius: 0;
   color: var(--muted);
@@ -555,8 +556,6 @@ input[name="turn-speed"] {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 12px;
 }
 
 .turn-label {
