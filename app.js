@@ -131,12 +131,6 @@ function setStatus(message) {
   statusText.textContent = message;
 }
 
-function setTurnIndicator(message) {
-  const indicator = document.getElementById('turn-indicator');
-  if (indicator) {
-    indicator.textContent = message;
-  }
-}
 
 function setRoomCode(code) {
   roomCode.textContent = code || "-";
@@ -432,9 +426,6 @@ function resetSelections() {
 
 function advancePlayer() {
   currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-  // Update turn indicator immediately
-  const turnMsg = players.length === 1 ? "Your turn" : `${players[currentPlayerIndex].name}'s turn`;
-  setTurnIndicator(turnMsg);
 }
 
 function endGame() {
@@ -578,7 +569,6 @@ function handleTimeoutTurn() {
   renderScoreboard();
   if (players.length > 1) {
     setStatus(`${players[currentPlayerIndex].name}'s turn.`);
-    setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
   }
   lockBoard = false;
   // Timer will start when the next player flips their first card
@@ -652,7 +642,6 @@ function handleCardSelection(index) {
     }
     if (players.length > 1) {
       setStatus(`${players[currentPlayerIndex].name}'s turn. Select another card.`);
-      setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
     }
     return;
   }
@@ -730,7 +719,6 @@ function startGame() {
   renderScoreboard();
   if (players.length > 1) {
     setStatus(`${players[currentPlayerIndex].name}'s turn. Select two cards.`);
-    setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
   }
 }
 
@@ -824,10 +812,8 @@ function applyServerState(state) {
   }
   if (currentPlayer.id === multiplayer.playerId) {
     setStatus("Your turn. Select two cards.");
-    setTurnIndicator("Your turn");
   } else {
     setStatus(`${currentPlayer.name}'s turn.`);
-    setTurnIndicator(`${currentPlayer.name}'s turn`);
   }
 }
 
