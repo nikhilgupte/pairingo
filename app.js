@@ -934,15 +934,27 @@ function fallbackCopyInvite(link) {
 }
 
 function doCopyLink() {
-  // Create clean invite URL with only the room param (no cheat or other params)
   const url = new URL(window.location.href);
-  url.search = ""; // Clear all params
+  url.search = "";
   url.searchParams.set("room", multiplayer.roomId);
   const link = url.toString();
+
+  // Show link in room input for manual copy
+  if (roomInput) {
+    roomInput.value = link;
+    roomInput.select();
+  }
+
+  const doConfirm = () => {
+    if (inviteButton) {
+      const prev = inviteButton.textContent;
+      inviteButton.textContent = "✓ Copied!";
+      setTimeout(() => { inviteButton.textContent = prev; }, 2000);
+    }
+  };
+
   if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard
-      .writeText(link)
-      .catch(() => fallbackCopyInvite(link));
+    navigator.clipboard.writeText(link).then(doConfirm).catch(() => fallbackCopyInvite(link));
   } else {
     fallbackCopyInvite(link);
   }
