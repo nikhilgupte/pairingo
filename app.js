@@ -724,10 +724,20 @@ function updateUrlWithRoom(roomId) {
   window.history.replaceState({}, "", url.toString());
 }
 
+function applyEdition(edition) {
+  if (!edition || edition === currentEdition) return;
+  currentEdition = edition;
+  document.querySelectorAll(".edition-pill").forEach(b => {
+    b.classList.toggle("active", b.dataset.edition === edition);
+  });
+  document.getElementById("speech-toggle-label")?.classList.toggle("hidden", edition === "default");
+}
+
 function applyServerState(state) {
   if (!state) {
     return;
   }
+  applyEdition(state.edition);
   const signature = state.deck.join(",");
   if (signature !== currentDeckSignature) {
     deck = buildDeckFromOrder(state.deck);
@@ -830,11 +840,14 @@ function ensureSocket() {
       setRoomCode("");
       updateUrlWithRoom(null);
       updateMultiplayerControls();
-      // Restore player count selector to local mode
+      // Restore player count selector and edition pills to local mode
       const playerCountSelector = document.querySelector('.player-count-selector');
-      if (playerCountSelector) {
-        playerCountSelector.classList.remove('hidden');
-      }
+      if (playerCountSelector) playerCountSelector.classList.remove('hidden');
+      document.querySelectorAll('.edition-pill').forEach(b => {
+        b.disabled = false;
+        b.style.opacity = '';
+        b.style.cursor = '';
+      });
       // Hide connection info
       const connectionInfo = document.getElementById('connection-info');
       if (connectionInfo) {
@@ -878,6 +891,12 @@ function ensureSocket() {
         }
         // Hide player count in multiplayer — player count is governed by who joins (max 4)
         document.getElementById('player-count-selector')?.classList.add('hidden');
+        // Disable edition pills for non-hosts
+        document.querySelectorAll('.edition-pill').forEach(b => {
+          b.disabled = !multiplayer.isHost;
+          b.style.opacity = multiplayer.isHost ? '' : '0.5';
+          b.style.cursor = multiplayer.isHost ? '' : 'default';
+        });
         // Update join/disconnect button visibility
         updateJoinDisconnectUI();
         if (!multiplayer.isHost) hideRestartButton();
@@ -917,7 +936,7 @@ function sendMessage(payload) {
 }
 
 function hostMultiplayer() {
-  sendMessage({ type: "create-room", speedMs: 12000 });
+  sendMessage({ type: "create-room", speedMs: 12000, edition: currentEdition });
 }
 
 function joinMultiplayer(code) {
@@ -1064,13 +1083,17 @@ if (savedEdition) {
 // Switch edition
 document.querySelectorAll(".edition-pill").forEach(btn => {
   btn.addEventListener("click", () => {
-    if (multiplayer.active) return;
+    if (multiplayer.active && !multiplayer.isHost) return;
     document.querySelectorAll(".edition-pill").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentEdition = btn.dataset.edition;
     localStorage.setItem("edition", currentEdition);
     document.getElementById("speech-toggle-label")?.classList.toggle("hidden", currentEdition === "default");
-    startGame();
+    if (multiplayer.active && multiplayer.isHost) {
+      sendMessage({ type: "set-edition", edition: currentEdition });
+    } else {
+      startGame();
+    }
   });
 });
 
