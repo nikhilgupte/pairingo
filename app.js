@@ -151,11 +151,9 @@ function updateJoinDisconnectUI() {
   const singlePlayer = getPlayerCount() === 1;
   if (multiplayer.active) {
     if (joinSection) joinSection.classList.add('hidden');
-    if (inviteButton) inviteButton.classList.add('hidden');
     if (disconnectButton) disconnectButton.classList.remove('hidden');
   } else {
     if (joinSection) joinSection.classList.toggle('hidden', singlePlayer);
-    if (inviteButton) inviteButton.classList.toggle('hidden', singlePlayer);
     if (disconnectButton) disconnectButton.classList.add('hidden');
   }
 }
