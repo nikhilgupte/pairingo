@@ -876,6 +876,8 @@ function ensureSocket() {
         if (connectionInfo) {
           connectionInfo.classList.remove('hidden');
         }
+        // Hide player count in multiplayer — player count is governed by who joins (max 4)
+        document.getElementById('player-count-selector')?.classList.add('hidden');
         // Update join/disconnect button visibility
         updateJoinDisconnectUI();
         if (!multiplayer.isHost) hideRestartButton();
