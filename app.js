@@ -158,11 +158,8 @@ function updateJoinDisconnectUI() {
   const inRoom = multiplayer.active;
   if (inviteButton) inviteButton.classList.toggle('hidden', inRoom);
   if (joinButton) joinButton.classList.toggle('hidden', inRoom);
-  if (roomInput) {
-    roomInput.readOnly = inRoom;
-    if (!inRoom) roomInput.value = '';
-  }
-  if (shareButton) shareButton.classList.toggle('hidden', !inRoom);
+  if (roomInput) roomInput.classList.toggle('hidden', inRoom);
+  if (shareButton) shareButton.classList.add('hidden');
   if (disconnectButton) disconnectButton.classList.toggle('hidden', !inRoom);
 }
 
@@ -970,12 +967,12 @@ function doCopyLink() {
   url.searchParams.set("room", multiplayer.roomId);
   const link = url.toString();
 
-  if (roomInput) roomInput.value = link;
 
   const doConfirm = () => {
-    if (shareButton) {
-      shareButton.textContent = "✓";
-      setTimeout(() => { shareButton.textContent = "📤"; }, 2000);
+    if (inviteButton) {
+      const prev = inviteButton.textContent;
+      inviteButton.textContent = "✓ Copied!";
+      setTimeout(() => { inviteButton.textContent = prev; }, 2000);
     }
   };
 
