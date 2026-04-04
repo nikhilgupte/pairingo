@@ -1013,7 +1013,7 @@ function showRestartButton() {
 
 function hideRestartButton() {
   if (restartButton) restartButton.style.display = 'none';
-  document.getElementById('player-count-selector')?.style.setProperty('display', 'flex');
+  document.getElementById('player-count-selector')?.style.setProperty('display', 'grid');
 }
 
 
