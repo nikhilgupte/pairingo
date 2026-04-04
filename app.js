@@ -623,8 +623,7 @@ function handleCardSelection(index) {
     if (players.length === 1 && !gameTimerStart) startGameTimer();
     firstSelection = index;
     // Turn timer only for multiplayer
-    const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
-    if (timerEnabled && players.length > 1) {
+    if (players.length > 1) {
       // Calculate time based on pairs discovered: 8s at start, 3s when all pairs found
       const pairsDiscovered = matchedPairs;
       const timeSeconds = Math.max(3, 8 - (pairsDiscovered / TOTAL_PAIRS) * 5);
@@ -761,18 +760,12 @@ function applyServerState(state) {
   // Start timer only once when first card in turn is flipped (and timer is enabled)
   // Timer is visible to all players, not just the current player
   const hasFirstCardFlipped = state.revealed && state.revealed.length === 1;
-  const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
 
-  if (hasFirstCardFlipped && state.speedMs && timerEnabled && !multiplayerTurnTimerStarted) {
-    // First card just flipped, start the timer for everyone (if timer is enabled)
+  if (hasFirstCardFlipped && state.speedMs && !multiplayerTurnTimerStarted) {
     multiplayerTurnTimerStarted = true;
     startTurnTimer(state.speedMs);
   } else if (!hasFirstCardFlipped) {
-    // No cards revealed yet, reset the flag for next turn
     multiplayerTurnTimerStarted = false;
-    clearTurnTimer();
-  } else if (!timerEnabled) {
-    // Timer is disabled, ensure it's cleared
     clearTurnTimer();
   }
 
@@ -849,8 +842,6 @@ function ensureSocket() {
         restartButton.classList.add('hidden'); // Hidden until first card flip
       }
       if (inviteButton) inviteButton.classList.remove('hidden');
-      const timerBtn = document.getElementById('timer-toggle-btn');
-      if (timerBtn) timerBtn.classList.remove('hidden');
       // Update join/disconnect button visibility
       updateJoinDisconnectUI();
       startGame();
@@ -895,13 +886,9 @@ function ensureSocket() {
         if (!multiplayer.isHost) {
           if (restartButton) restartButton.classList.add('hidden');
           if (inviteButton) inviteButton.classList.add('hidden');
-          const timerBtn = document.getElementById('timer-toggle-btn');
-          if (timerBtn) timerBtn.classList.add('hidden');
         } else {
           // Host: ensure buttons are visible
           if (inviteButton) inviteButton.classList.remove('hidden');
-          const timerBtn = document.getElementById('timer-toggle-btn');
-          if (timerBtn) timerBtn.classList.remove('hidden');
         }
         applyServerState(message.state);
         if (pendingInviteCopy) {
@@ -939,10 +926,7 @@ function sendMessage(payload) {
 }
 
 function hostMultiplayer() {
-  const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
-  // Calculate initial speedMs: 12 seconds if timer enabled, 0 if disabled
-  const speedMs = timerEnabled ? 12000 : 0;
-  sendMessage({ type: "create-room", speedMs });
+  sendMessage({ type: "create-room", speedMs: 12000 });
 }
 
 function joinMultiplayer(code) {
@@ -1039,19 +1023,6 @@ function showRestartButton() {
 }
 
 
-// Timer toggle button
-const timerToggleBtn = document.getElementById('timer-toggle-btn');
-if (timerToggleBtn) {
-  timerToggleBtn.addEventListener('click', () => {
-    timerToggleBtn.classList.toggle('active');
-    // If in multiplayer and host, broadcast timer change to all players
-    if (multiplayer.active && multiplayer.isHost) {
-      const timerEnabled = timerToggleBtn.classList.contains('active');
-      const speedMs = timerEnabled ? 12000 : 0;
-      sendMessage({ type: "update-timer", speedMs });
-    }
-  });
-}
 
 // UI toggle (slide controls/scoreboard off-screen)
 const toggleUIBtn = document.getElementById("toggle-ui");
