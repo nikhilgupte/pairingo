@@ -843,11 +843,7 @@ function ensureSocket() {
       // Restore player count selector and edition pills to local mode
       const playerCountSelector = document.querySelector('.player-count-selector');
       if (playerCountSelector) playerCountSelector.classList.remove('hidden');
-      document.querySelectorAll('.edition-pill').forEach(b => {
-        b.disabled = false;
-        b.style.opacity = '';
-        b.style.cursor = '';
-      });
+      document.querySelectorAll('.edition-pill').forEach(b => { b.disabled = false; });
       // Hide connection info
       const connectionInfo = document.getElementById('connection-info');
       if (connectionInfo) {
@@ -892,11 +888,7 @@ function ensureSocket() {
         // Hide player count in multiplayer — player count is governed by who joins (max 4)
         document.getElementById('player-count-selector')?.classList.add('hidden');
         // Disable edition pills for non-hosts
-        document.querySelectorAll('.edition-pill').forEach(b => {
-          b.disabled = !multiplayer.isHost;
-          b.style.opacity = multiplayer.isHost ? '' : '0.5';
-          b.style.cursor = multiplayer.isHost ? '' : 'default';
-        });
+        document.querySelectorAll('.edition-pill').forEach(b => { b.disabled = !multiplayer.isHost; });
         // Update join/disconnect button visibility
         updateJoinDisconnectUI();
         if (!multiplayer.isHost) hideRestartButton();

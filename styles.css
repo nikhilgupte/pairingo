@@ -223,8 +223,14 @@ body {
   border-color: var(--primary);
 }
 
-.edition-pill:hover:not(.active) {
+.edition-pill:hover:not(.active):not(:disabled) {
   border-color: var(--primary);
+}
+
+.edition-pill:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* Flag images inside card backs */
