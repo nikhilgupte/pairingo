@@ -969,9 +969,9 @@ function doCopyLink() {
 
   const doConfirm = () => {
     if (shareButton) {
-      const prev = shareButton.textContent;
+      const prev = shareButton.innerHTML;
       shareButton.textContent = "✓";
-      setTimeout(() => { shareButton.textContent = prev; }, 2000);
+      setTimeout(() => { shareButton.innerHTML = prev; }, 2000);
     }
   };
 
