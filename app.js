@@ -674,10 +674,7 @@ function startGame() {
   if (multiplayer.active) {
     return;
   }
-  // Hide restart button until first card is flipped
-  if (restartButton) {
-    restartButton.style.visibility = 'hidden';
-  }
+  hideRestartButton();
   players = Array.from({ length: getPlayerCount() }, (_, index) => ({
     name: `Player ${index + 1}`,
     score: 0,
@@ -770,8 +767,8 @@ function applyServerState(state) {
   }
 
   // Show restart button for host when first card in game is flipped
-  if (hasFirstCardFlipped && multiplayer.isHost && restartButton) {
-    restartButton.style.visibility = 'visible';
+  if (hasFirstCardFlipped && multiplayer.isHost) {
+    showRestartButton();
   }
 
   renderScoreboard();
@@ -838,9 +835,7 @@ function ensureSocket() {
         connectionInfo.classList.add('hidden');
       }
       // Restore buttons in local mode
-      if (restartButton) {
-        restartButton.style.visibility = 'hidden'; // Hidden until first card flip
-      }
+      hideRestartButton();
       if (inviteButton) inviteButton.classList.remove('hidden');
       // Update join/disconnect button visibility
       updateJoinDisconnectUI();
@@ -884,7 +879,7 @@ function ensureSocket() {
         updateJoinDisconnectUI();
         // Hide buttons for non-hosts in multiplayer
         if (!multiplayer.isHost) {
-          if (restartButton) restartButton.style.visibility = 'hidden';
+          hideRestartButton();
           if (inviteButton) inviteButton.classList.add('hidden');
         } else {
           // Host: ensure buttons are visible
@@ -1011,14 +1006,16 @@ if (restartButton) {
 }
 
 function showRestartButton() {
-  if (restartButton) {
-    // Only show restart button for host in multiplayer, always show in local
-    if (multiplayer.active && !multiplayer.isHost) {
-      restartButton.style.visibility = 'hidden';
-    } else {
-      restartButton.style.visibility = 'visible';
-    }
-  }
+  const playerCountSelector = document.getElementById('player-count-selector');
+  if (multiplayer.active && !multiplayer.isHost) return;
+  if (restartButton) restartButton.style.visibility = 'visible';
+  if (playerCountSelector) playerCountSelector.classList.add('hidden');
+}
+
+function hideRestartButton() {
+  const playerCountSelector = document.getElementById('player-count-selector');
+  if (restartButton) restartButton.style.visibility = 'hidden';
+  if (playerCountSelector) playerCountSelector.classList.remove('hidden');
 }
 
 
