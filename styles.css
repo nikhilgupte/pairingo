@@ -133,6 +133,10 @@ body {
   display: none;
 }
 
+.game-start-row {
+  display: contents;
+}
+
 /* Player count selector (pill buttons) */
 .player-count-selector {
   display: grid;

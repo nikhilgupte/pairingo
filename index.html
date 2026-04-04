@@ -30,11 +30,10 @@
         <!-- Hidden cheat mode checkbox (controlled by ?cheat=on query param) -->
         <input type="checkbox" id="cheat-mode" name="cheat-mode" style="display: none;" />
 
-        <!-- Restart button -->
-        <button id="restart-btn" class="start-button" type="button" style="visibility: hidden;">Restart Game</button>
-
-        <!-- Player count pill buttons -->
-        <div id="player-count-selector" class="player-count-selector">
+        <!-- Restart / player count: swapped on game start -->
+        <div class="game-start-row">
+          <button id="restart-btn" class="start-button" type="button" style="display:none;">Restart Game</button>
+          <div id="player-count-selector" class="player-count-selector">
           <label class="player-pill">
             <input type="radio" name="player-count" value="1" />
             <span>1</span>
@@ -52,6 +51,7 @@
             <span>4</span>
           </label>
         </div>
+        </div><!-- end .game-start-row -->
 
         <!-- Edition selector -->
         <div class="edition-selector">

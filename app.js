@@ -1006,16 +1006,14 @@ if (restartButton) {
 }
 
 function showRestartButton() {
-  const playerCountSelector = document.getElementById('player-count-selector');
   if (multiplayer.active && !multiplayer.isHost) return;
-  if (restartButton) restartButton.style.visibility = 'visible';
-  if (playerCountSelector) playerCountSelector.classList.add('hidden');
+  if (restartButton) restartButton.style.display = 'block';
+  document.getElementById('player-count-selector')?.style.setProperty('display', 'none');
 }
 
 function hideRestartButton() {
-  const playerCountSelector = document.getElementById('player-count-selector');
-  if (restartButton) restartButton.style.visibility = 'hidden';
-  if (playerCountSelector) playerCountSelector.classList.remove('hidden');
+  if (restartButton) restartButton.style.display = 'none';
+  document.getElementById('player-count-selector')?.style.setProperty('display', 'flex');
 }
 
 
