@@ -81,6 +81,7 @@ const inviteButton = document.getElementById("invite-btn");
 const joinButton = document.getElementById("join-btn");
 const joinSection = document.getElementById("join-section");
 const disconnectButton = document.getElementById("disconnect-btn");
+const shareButton = document.getElementById("share-btn");
 const roomInput = document.getElementById("room-input");
 const roomCode = document.getElementById("room-code");
 const connectionStatus = document.getElementById("connection-status");
@@ -149,13 +150,20 @@ function updateMultiplayerControls() {
 
 function updateJoinDisconnectUI() {
   const singlePlayer = getPlayerCount() === 1;
-  if (multiplayer.active) {
+  if (singlePlayer && !multiplayer.active) {
     if (joinSection) joinSection.classList.add('hidden');
-    if (disconnectButton) disconnectButton.classList.remove('hidden');
-  } else {
-    if (joinSection) joinSection.classList.toggle('hidden', singlePlayer);
-    if (disconnectButton) disconnectButton.classList.add('hidden');
+    return;
   }
+  if (joinSection) joinSection.classList.remove('hidden');
+  const inRoom = multiplayer.active;
+  if (inviteButton) inviteButton.classList.toggle('hidden', inRoom);
+  if (joinButton) joinButton.classList.toggle('hidden', inRoom);
+  if (roomInput) {
+    roomInput.readOnly = inRoom;
+    if (!inRoom) roomInput.value = '';
+  }
+  if (shareButton) shareButton.classList.toggle('hidden', !inRoom);
+  if (disconnectButton) disconnectButton.classList.toggle('hidden', !inRoom);
 }
 
 function buildIconSet() {
@@ -863,11 +871,6 @@ function ensureSocket() {
         // Pick a random card back pattern and color for this game
         currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
         currentCardBackColor = getRandomDarkColor();
-        // Hide player count selector in multiplayer mode
-        const playerCountSelector = document.querySelector('.player-count-selector');
-        if (playerCountSelector) {
-          playerCountSelector.classList.add('hidden');
-        }
         // Show connection info
         const connectionInfo = document.getElementById('connection-info');
         if (connectionInfo) {
@@ -875,14 +878,7 @@ function ensureSocket() {
         }
         // Update join/disconnect button visibility
         updateJoinDisconnectUI();
-        // Hide buttons for non-hosts in multiplayer
-        if (!multiplayer.isHost) {
-          hideRestartButton();
-          if (inviteButton) inviteButton.classList.add('hidden');
-        } else {
-          // Host: ensure buttons are visible
-          if (inviteButton) inviteButton.classList.remove('hidden');
-        }
+        if (!multiplayer.isHost) hideRestartButton();
         applyServerState(message.state);
         if (pendingInviteCopy) {
           pendingInviteCopy = false;
@@ -939,17 +935,12 @@ function doCopyLink() {
   url.searchParams.set("room", multiplayer.roomId);
   const link = url.toString();
 
-  // Show link in room input for manual copy
-  if (roomInput) {
-    roomInput.value = link;
-    roomInput.select();
-  }
+  if (roomInput) roomInput.value = link;
 
   const doConfirm = () => {
-    if (inviteButton) {
-      const prev = inviteButton.textContent;
-      inviteButton.textContent = "✓ Copied!";
-      setTimeout(() => { inviteButton.textContent = prev; }, 2000);
+    if (shareButton) {
+      shareButton.textContent = "✓";
+      setTimeout(() => { shareButton.textContent = "📤"; }, 2000);
     }
   };
 
@@ -984,6 +975,12 @@ board.addEventListener("click", (event) => {
 inviteButton.addEventListener("click", () => {
   copyInviteLink();
 });
+
+if (shareButton) {
+  shareButton.addEventListener("click", () => {
+    doCopyLink();
+  });
+}
 
 joinButton.addEventListener("click", () => {
   const code = roomInput.value.trim().toUpperCase();
