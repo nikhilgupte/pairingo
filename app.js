@@ -130,7 +130,10 @@ function getPlayerCount() {
 
 
 function setRoomCode(code) {
-  roomCode.textContent = code || "-";
+  if (roomCode) roomCode.textContent = code || "-";
+  if (disconnectButton) {
+    disconnectButton.textContent = code ? `Disconnect Room ${code}` : "Disconnect";
+  }
 }
 
 function setConnectionStatus(message) {
