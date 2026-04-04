@@ -168,6 +168,7 @@ function handleSetEdition(ws, { edition = "default" } = {}) {
   }
   const valid = ["default", "flags", "bugs"];
   room.edition = valid.includes(edition) ? edition : "default";
+  resetRoom(room);
   broadcast(room, { type: "state-update", state: buildState(room) });
 }
 

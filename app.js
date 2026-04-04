@@ -725,21 +725,22 @@ function updateUrlWithRoom(roomId) {
 }
 
 function applyEdition(edition) {
-  if (!edition || edition === currentEdition) return;
+  if (!edition || edition === currentEdition) return false;
   currentEdition = edition;
   document.querySelectorAll(".edition-pill").forEach(b => {
     b.classList.toggle("active", b.dataset.edition === edition);
   });
   document.getElementById("speech-toggle-label")?.classList.toggle("hidden", edition === "default");
+  return true;
 }
 
 function applyServerState(state) {
   if (!state) {
     return;
   }
-  applyEdition(state.edition);
+  const editionChanged = applyEdition(state.edition);
   const signature = state.deck.join(",");
-  if (signature !== currentDeckSignature) {
+  if (signature !== currentDeckSignature || editionChanged) {
     deck = buildDeckFromOrder(state.deck);
     currentDeckSignature = signature;
     // Generate a new color and pattern for each new game
