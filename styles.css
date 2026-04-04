@@ -485,8 +485,7 @@ input[name="turn-speed"] {
 /* Connection info */
 .connection-info {
   margin: 0;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  padding: 0;
   background: transparent;
   border-radius: 0;
   color: var(--muted);
