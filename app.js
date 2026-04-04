@@ -103,6 +103,8 @@ let turnCount = 0;
 let turnTimerInterval = null;
 let turnTimerDisplay = null;
 let tickInterval = null;
+let gameTimerInterval = null;
+let gameTimerStart = null;
 let localGameSpeedMs = 0;
 let pendingInviteCopy = false;
 let multiplayerTurnTimerStarted = false;
@@ -433,6 +435,7 @@ function advancePlayer() {
 }
 
 function endGame() {
+  stopGameTimer();
   clearTurnTimer();
   lockBoard = true;
   const highestScore = Math.max(...players.map((player) => player.score));
@@ -645,15 +648,16 @@ function handleCardSelection(index) {
     showRestartButton();
     // Increment turn counter when a new turn starts
     turnCount += 1;
+    // Start overall game timer for single player on first flip
+    if (players.length === 1 && !gameTimerStart) startGameTimer();
     firstSelection = index;
-    // Check if timer is enabled
+    // Turn timer only for multiplayer
     const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
-    if (timerEnabled) {
+    if (timerEnabled && players.length > 1) {
       // Calculate time based on pairs discovered: 8s at start, 3s when all pairs found
       const pairsDiscovered = matchedPairs;
       const timeSeconds = Math.max(3, 8 - (pairsDiscovered / TOTAL_PAIRS) * 5);
       const timeMs = timeSeconds * 1000 * 0.8;
-      console.log('Pairs discovered:', pairsDiscovered, 'Time per turn:', timeSeconds, 's');
       startTurnTimer(timeMs);
     }
     const promptMessage =
@@ -669,6 +673,35 @@ function handleCardSelection(index) {
   secondSelection = index;
   lockBoard = true;
   evaluateSelection();
+}
+
+function startGameTimer() {
+  const el = document.getElementById("game-timer");
+  if (!el) return;
+  gameTimerStart = Date.now();
+  el.classList.remove("hidden");
+  el.textContent = "0:00";
+  gameTimerInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - gameTimerStart) / 1000);
+    el.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+  }, 500);
+}
+
+function stopGameTimer() {
+  if (gameTimerInterval) {
+    clearInterval(gameTimerInterval);
+    gameTimerInterval = null;
+  }
+}
+
+function resetGameTimer() {
+  stopGameTimer();
+  gameTimerStart = null;
+  const el = document.getElementById("game-timer");
+  if (el) {
+    el.classList.add("hidden");
+    el.textContent = "0:00";
+  }
 }
 
 function startGame() {
@@ -691,6 +724,7 @@ function startGame() {
   multiplayerGameOver = false;
   turnCount = 0;
   clearTurnTimer();
+  resetGameTimer();
   // Pick card back pattern and color for this game
   if (currentEdition === "flags") {
     currentCardBackPattern = "pattern-flags";

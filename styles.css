@@ -487,6 +487,14 @@ input[name="turn-speed"] {
   font-weight: 500;
 }
 
+.game-timer {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+}
+
 /* Turn timer - always takes up space, never collapses */
 .turn-timer {
   display: flex !important;
