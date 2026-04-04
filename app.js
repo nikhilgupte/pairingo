@@ -158,12 +158,14 @@ function updateMultiplayerControls() {
 }
 
 function updateJoinDisconnectUI() {
-  // Show disconnect button only when connected to a room
+  const singlePlayer = getPlayerCount() === 1;
   if (multiplayer.active) {
     if (joinSection) joinSection.classList.add('hidden');
+    if (inviteButton) inviteButton.classList.add('hidden');
     if (disconnectButton) disconnectButton.classList.remove('hidden');
   } else {
-    if (joinSection) joinSection.classList.remove('hidden');
+    if (joinSection) joinSection.classList.toggle('hidden', singlePlayer);
+    if (inviteButton) inviteButton.classList.toggle('hidden', singlePlayer);
     if (disconnectButton) disconnectButton.classList.add('hidden');
   }
 }
@@ -277,6 +279,7 @@ function createDeck() {
 
 function renderScoreboard() {
   scoreboard.innerHTML = "";
+  if (players.length === 1 && !multiplayer.active) return;
   const highestScore = players.length
     ? Math.max(...players.map((player) => player.score))
     : 0;
@@ -471,11 +474,7 @@ function handleMatch(firstIndex, secondIndex) {
   updateCardUI(firstIndex);
   updateCardUI(secondIndex);
   renderScoreboard();
-  const message =
-    players.length === 1
-      ? "Match! Keep going."
-      : `${players[currentPlayerIndex].name} found a match and goes again.`;
-  setStatus(message);
+  if (players.length > 1) setStatus(`${players[currentPlayerIndex].name} found a match and goes again.`);
 
   window.setTimeout(() => {
     resetSelections();
@@ -490,9 +489,7 @@ function handleMatch(firstIndex, secondIndex) {
 function handleMismatch(firstIndex, secondIndex) {
   sfx.miss();
   clearTurnTimer();
-  const message =
-    players.length === 1 ? "No match. Try again." : "No match. Next player's turn.";
-  setStatus(message);
+  if (players.length > 1) setStatus("No match. Next player's turn.");
   window.setTimeout(() => {
     deck[firstIndex].flipped = false;
     deck[secondIndex].flipped = false;
@@ -500,11 +497,7 @@ function handleMismatch(firstIndex, secondIndex) {
     updateCardUI(secondIndex);
     advancePlayer();
     renderScoreboard();
-    const turnMessage =
-      players.length === 1
-        ? "Your turn. Select two cards."
-        : `${players[currentPlayerIndex].name}'s turn.`;
-    setStatus(turnMessage);
+    if (players.length > 1) setStatus(`${players[currentPlayerIndex].name}'s turn.`);
     resetSelections();
     lockBoard = false;
   }, 800);
@@ -583,13 +576,10 @@ function handleTimeoutTurn() {
   resetSelections();
   advancePlayer();
   renderScoreboard();
-  const turnMessage =
-    players.length === 1
-      ? "Time's up! Your turn. Select two cards."
-      : `${players[currentPlayerIndex].name}'s turn.`;
-  setStatus(turnMessage);
-  const turnIndicatorMsg = players.length === 1 ? "Your turn" : `${players[currentPlayerIndex].name}'s turn`;
-  setTurnIndicator(turnIndicatorMsg);
+  if (players.length > 1) {
+    setStatus(`${players[currentPlayerIndex].name}'s turn.`);
+    setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
+  }
   lockBoard = false;
   // Timer will start when the next player flips their first card
 }
@@ -660,13 +650,10 @@ function handleCardSelection(index) {
       const timeMs = timeSeconds * 1000 * 0.8;
       startTurnTimer(timeMs);
     }
-    const promptMessage =
-      players.length === 1
-        ? "Select another card."
-        : `${players[currentPlayerIndex].name}'s turn. Select another card.`;
-    setStatus(promptMessage);
-    const turnMsg = players.length === 1 ? "Your turn" : `${players[currentPlayerIndex].name}'s turn`;
-    setTurnIndicator(turnMsg);
+    if (players.length > 1) {
+      setStatus(`${players[currentPlayerIndex].name}'s turn. Select another card.`);
+      setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
+    }
     return;
   }
 
@@ -741,8 +728,10 @@ function startGame() {
 
   renderBoard();
   renderScoreboard();
-  setStatus(`${players[currentPlayerIndex].name}'s turn. Select two cards.`);
-  setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
+  if (players.length > 1) {
+    setStatus(`${players[currentPlayerIndex].name}'s turn. Select two cards.`);
+    setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
+  }
 }
 
 function updateUrlWithRoom(roomId) {
@@ -1149,6 +1138,7 @@ document.querySelectorAll(".edition-pill").forEach(btn => {
 playerCountInputs.forEach((input) => {
   input.addEventListener('change', () => {
     if (!multiplayer.active) {
+      updateJoinDisconnectUI();
       startGame();
     }
   });
