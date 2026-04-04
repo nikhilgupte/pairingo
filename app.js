@@ -159,7 +159,7 @@ function updateJoinDisconnectUI() {
   if (inviteButton) inviteButton.classList.toggle('hidden', inRoom);
   if (joinButton) joinButton.classList.toggle('hidden', inRoom);
   if (roomInput) roomInput.classList.toggle('hidden', inRoom);
-  if (shareButton) shareButton.classList.add('hidden');
+  if (shareButton) shareButton.classList.toggle('hidden', !inRoom || !multiplayer.isHost);
   if (disconnectButton) disconnectButton.classList.toggle('hidden', !inRoom);
 }
 
@@ -967,16 +967,17 @@ function doCopyLink() {
   url.searchParams.set("room", multiplayer.roomId);
   const link = url.toString();
 
-
   const doConfirm = () => {
-    if (inviteButton) {
-      const prev = inviteButton.textContent;
-      inviteButton.textContent = "✓ Copied!";
-      setTimeout(() => { inviteButton.textContent = prev; }, 2000);
+    if (shareButton) {
+      const prev = shareButton.textContent;
+      shareButton.textContent = "✓";
+      setTimeout(() => { shareButton.textContent = prev; }, 2000);
     }
   };
 
-  if (navigator.clipboard && window.isSecureContext) {
+  if (navigator.share) {
+    navigator.share({ title: "Join my Pairingo game!", url: link }).catch(() => {});
+  } else if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(link).then(doConfirm).catch(() => fallbackCopyInvite(link));
   } else {
     fallbackCopyInvite(link);
