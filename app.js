@@ -77,7 +77,6 @@ const CREEPY_CRAWLIES_ICONS = [
 ];
 
 const board = document.getElementById("game-board");
-const statusText = document.getElementById("status");
 const inviteButton = document.getElementById("invite-btn");
 const joinButton = document.getElementById("join-btn");
 const joinSection = document.getElementById("join-section");
@@ -127,9 +126,6 @@ function getPlayerCount() {
   return Number(selected ? selected.value : 2);
 }
 
-function setStatus(message) {
-  statusText.textContent = message;
-}
 
 
 function setRoomCode(code) {
@@ -451,7 +447,6 @@ function endGame() {
   });
 
   renderScoreboard();
-  setStatus(`Game over! ${message}`);
 }
 
 function handleMatch(firstIndex, secondIndex) {
@@ -465,7 +460,6 @@ function handleMatch(firstIndex, secondIndex) {
   updateCardUI(firstIndex);
   updateCardUI(secondIndex);
   renderScoreboard();
-  if (players.length > 1) setStatus(`${players[currentPlayerIndex].name} found a match and goes again.`);
 
   window.setTimeout(() => {
     resetSelections();
@@ -480,7 +474,6 @@ function handleMatch(firstIndex, secondIndex) {
 function handleMismatch(firstIndex, secondIndex) {
   sfx.miss();
   clearTurnTimer();
-  if (players.length > 1) setStatus("No match. Next player's turn.");
   window.setTimeout(() => {
     deck[firstIndex].flipped = false;
     deck[secondIndex].flipped = false;
@@ -488,7 +481,6 @@ function handleMismatch(firstIndex, secondIndex) {
     updateCardUI(secondIndex);
     advancePlayer();
     renderScoreboard();
-    if (players.length > 1) setStatus(`${players[currentPlayerIndex].name}'s turn.`);
     resetSelections();
     lockBoard = false;
   }, 800);
@@ -568,7 +560,6 @@ function handleTimeoutTurn() {
   advancePlayer();
   renderScoreboard();
   if (players.length > 1) {
-    setStatus(`${players[currentPlayerIndex].name}'s turn.`);
   }
   lockBoard = false;
   // Timer will start when the next player flips their first card
@@ -641,7 +632,6 @@ function handleCardSelection(index) {
       startTurnTimer(timeMs);
     }
     if (players.length > 1) {
-      setStatus(`${players[currentPlayerIndex].name}'s turn. Select another card.`);
     }
     return;
   }
@@ -718,7 +708,6 @@ function startGame() {
   renderBoard();
   renderScoreboard();
   if (players.length > 1) {
-    setStatus(`${players[currentPlayerIndex].name}'s turn. Select two cards.`);
   }
 }
 
@@ -801,19 +790,15 @@ function applyServerState(state) {
       winners.length === 1
         ? `${winners[0]} wins with ${highestScore} pairs!`
         : `Tie between ${winners.join(" and ")} with ${highestScore} pairs each.`;
-    setStatus(`Game over! ${message}`);
     return;
   }
 
   const currentPlayer = players[currentPlayerIndex];
   if (!currentPlayer) {
-    setStatus("Waiting for players...");
     return;
   }
   if (currentPlayer.id === multiplayer.playerId) {
-    setStatus("Your turn. Select two cards.");
   } else {
-    setStatus(`${currentPlayer.name}'s turn.`);
   }
 }
 
@@ -867,7 +852,6 @@ function ensureSocket() {
       if (timerBtn) timerBtn.classList.remove('hidden');
       // Update join/disconnect button visibility
       updateJoinDisconnectUI();
-      setStatus("Disconnected from multiplayer. Starting local game.");
       startGame();
     }
   });
@@ -877,7 +861,6 @@ function ensureSocket() {
     try {
       message = JSON.parse(event.data);
     } catch (error) {
-      setStatus("Received an invalid message.");
       return;
     }
 
@@ -929,7 +912,6 @@ function ensureSocket() {
         applyServerState(message.state);
         break;
       case "error":
-        setStatus(message.message || "Something went wrong.");
         break;
       default:
         break;
@@ -964,7 +946,6 @@ function hostMultiplayer() {
 
 function joinMultiplayer(code) {
   if (!code) {
-    setStatus("Enter a room code to join.");
     return;
   }
   sendMessage({ type: "join-room", roomId: code });
@@ -972,7 +953,6 @@ function joinMultiplayer(code) {
 
 function fallbackCopyInvite(link) {
   window.prompt("Copy this link to invite others:", link);
-  setStatus("Invite link ready. Share it with your players.");
 }
 
 function doCopyLink() {
@@ -984,7 +964,6 @@ function doCopyLink() {
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard
       .writeText(link)
-      .then(() => setStatus("Invite link copied! Share it to let others join."))
       .catch(() => fallbackCopyInvite(link));
   } else {
     fallbackCopyInvite(link);
