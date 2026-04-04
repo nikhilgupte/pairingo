@@ -84,7 +84,6 @@ const disconnectButton = document.getElementById("disconnect-btn");
 const shareButton = document.getElementById("share-btn");
 const roomInput = document.getElementById("room-input");
 const roomCode = document.getElementById("room-code");
-const connectionStatus = document.getElementById("connection-status");
 const scoreboard = document.getElementById("scoreboard");
 const playerCountInputs = Array.from(
   document.querySelectorAll("input[name='player-count']")
@@ -136,9 +135,7 @@ function setRoomCode(code) {
   }
 }
 
-function setConnectionStatus(message) {
-  connectionStatus.textContent = message;
-}
+function setConnectionStatus(_message) {}
 
 function setPlayerControlsDisabled(disabled) {
   playerCountInputs.forEach((input) => {
