@@ -660,12 +660,13 @@ function stopGameTimer() {
   }
 }
 
-function resetGameTimer() {
+function resetGameTimer(showIdle = false) {
   stopGameTimer();
   gameTimerStart = null;
   const el = document.getElementById("game-timer");
   if (el) {
-    el.classList.add("hidden");
+    el.textContent = "0:00";
+    el.classList.toggle("hidden", !showIdle);
     el.textContent = "0:00";
   }
 }
@@ -690,7 +691,7 @@ function startGame() {
   multiplayerGameOver = false;
   turnCount = 0;
   clearTurnTimer();
-  resetGameTimer();
+  resetGameTimer(getPlayerCount() === 1);
   // Pick card back pattern and color for this game
   if (currentEdition === "flags") {
     currentCardBackPattern = "pattern-flags";
