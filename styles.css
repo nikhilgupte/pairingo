@@ -489,6 +489,8 @@ input[name="turn-speed"] {
 }
 
 .game-timer {
+  display: block;
+  text-align: center;
   font-size: 1.1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
