@@ -27,17 +27,13 @@
       </header>
 
       <section class="controls" aria-label="Game controls">
-        <!-- Timer toggle -->
-        <button id="timer-toggle-btn" class="icon-toggle active" title="Time to think fast! (12s → 3s)" aria-label="Toggle timer">⏱️</button>
-
         <!-- Hidden cheat mode checkbox (controlled by ?cheat=on query param) -->
         <input type="checkbox" id="cheat-mode" name="cheat-mode" style="display: none;" />
 
-        <!-- Restart button -->
-        <button id="restart-btn" class="start-button" type="button">Restart Game</button>
+        <button id="restart-btn" class="start-button" type="button" style="display:none;">Restart Game</button>
 
         <!-- Player count pill buttons -->
-        <div class="player-count-selector">
+        <div id="player-count-selector" class="player-count-selector">
           <label class="player-pill">
             <input type="radio" name="player-count" value="1" />
             <span>1</span>
@@ -62,13 +58,17 @@
           <button class="edition-pill" data-edition="flags">Flags 🌍</button>
           <button class="edition-pill" data-edition="bugs">Bugs 🐛</button>
           <button class="edition-pill" data-edition="dinos">Dinos 🦕</button>
+
+          <!-- Speech toggle (shown for non-classic editions) -->
+          <label id="speech-toggle-label" class="speech-toggle hidden">
+            <input type="checkbox" id="speech-toggle" checked>
+            Speak
+          </label>
         </div>
 
-        <!-- Invite Players button -->
-        <button id="invite-btn" class="secondary-button" type="button">Invite Players</button>
-
-        <!-- Join room section (shown when not connected) -->
+        <!-- Multiplayer row -->
         <div id="join-section" class="join-section">
+          <button id="invite-btn" class="secondary-button" type="button">Invite Players</button>
           <input
             id="room-input"
             type="text"
@@ -78,27 +78,23 @@
             aria-label="Room code"
           />
           <button id="join-btn" class="secondary-button" type="button">Join Room</button>
-        </div>
-
-        <!-- Disconnect button (shown when connected to a room) -->
-        <button id="disconnect-btn" class="secondary-button hidden" type="button">Disconnect</button>
-
-        <!-- Status bar -->
-        <div class="status-bar">
-          <p id="status" class="status" role="status" aria-live="polite">Ready to play.</p>
-          <p class="connection-info hidden" id="connection-info">
-            Room: <span id="room-code">-</span> · <span id="connection-status">Offline</span>
-          </p>
+          <button id="share-btn" class="icon-toggle hidden" type="button" title="Share invite link" aria-label="Share invite link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+          </button>
+          <button id="disconnect-btn" class="secondary-button hidden" type="button">Disconnect</button>
         </div>
       </section>
 
       <section class="scoreboard-section" aria-label="Scoreboard">
-        <h2>Scores</h2>
+        <span id="game-timer" class="game-timer hidden">0:00</span>
         <ul id="scoreboard" class="scoreboard"></ul>
       </section>
 
       <div class="game-header">
-        <p id="turn-indicator" class="turn-indicator">Ready to play.</p>
         <div id="turn-timer" class="turn-timer hidden">
           <div class="timer-bar"><div id="timer-fill" class="timer-fill"></div></div>
         </div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'memory-match-v1';
+const CACHE_NAME = 'pairingo-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,7 +8,6 @@ const urlsToCache = [
   '/manifest.json'
 ];
 
-// Install event - cache assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -17,59 +16,32 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(cacheNames =>
+      Promise.all(
+        cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch event - serve from cache, fall back to network
+// Network-first: always try network, fall back to cache when offline
 self.addEventListener('fetch', event => {
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
-  // For WebSocket connections, skip caching
-  if (event.request.url.includes('ws') || event.request.url.includes('wss')) {
-    return;
-  }
+  if (!event.request.url.startsWith(self.location.origin)) return;
+  if (event.request.url.includes('ws')) return;
 
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
-        return fetch(event.request).then(response => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type === 'error') {
-            return response;
-          }
-          // Clone the response
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-          return response;
-        });
+        return response;
       })
-      .catch(() => {
-        // Offline fallback
-        if (event.request.destination === 'document') {
-          return caches.match('/index.html');
-        }
-      })
+      .catch(() => caches.match(event.request)
+        .then(cached => cached || caches.match('/index.html'))
+      )
   );
 });

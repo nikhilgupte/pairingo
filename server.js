@@ -99,6 +99,8 @@ function buildState(room) {
     gameOver: room.matched.size === TOTAL_PAIRS,
     turnCount: room.turnCount,
     speedMs: speedMs,
+    edition: room.edition || "default",
+    iconSeed: room.iconSeed,
   };
 }
 
@@ -147,6 +149,7 @@ function resetRoom(room) {
   }
   clearTurnTimer(room);
   room.seed = createSeed();
+  room.iconSeed = createSeed();
   room.deck = createDeck(room.seed);
   room.matched = new Set();
   room.revealed = [];
@@ -158,12 +161,28 @@ function resetRoom(room) {
   });
 }
 
-function handleCreateRoom(ws, { speedMs = 0 } = {}) {
+function handleSetEdition(ws, { edition = "default" } = {}) {
+  const room = rooms.get(ws.roomId);
+  if (!room) return;
+  if (room.hostId !== ws.playerId) {
+    send(ws, { type: "error", message: "Only the host can change the edition." });
+    return;
+  }
+  const valid = ["default", "flags", "bugs"];
+  room.edition = valid.includes(edition) ? edition : "default";
+  resetRoom(room);
+  broadcast(room, { type: "state-update", state: buildState(room) });
+}
+
+function handleCreateRoom(ws, { speedMs = 0, edition = "default" } = {}) {
   const roomId = createRoomId();
   const seed = createSeed();
+  const valid = ["default", "flags", "bugs"];
+  const iconSeed = createSeed();
   const room = {
     id: roomId,
     seed,
+    iconSeed,
     deck: createDeck(seed),
     matched: new Set(),
     revealed: [],
@@ -175,6 +194,7 @@ function handleCreateRoom(ws, { speedMs = 0 } = {}) {
     turnCount: 0,
     speedMs: speedMs || 0,
     turnTimer: null,
+    edition: valid.includes(edition) ? edition : "default",
   };
   const player = createPlayer("Player 1");
   player.ws = ws;
@@ -342,7 +362,10 @@ wss.on("connection", (ws) => {
 
     switch (message.type) {
       case "create-room":
-        handleCreateRoom(ws, { speedMs: message.speedMs });
+        handleCreateRoom(ws, { speedMs: message.speedMs, edition: message.edition });
+        break;
+      case "set-edition":
+        handleSetEdition(ws, { edition: message.edition });
         break;
       case "join-room":
         handleJoinRoom(ws, String(message.roomId || "").trim().toUpperCase());

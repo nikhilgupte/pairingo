@@ -185,6 +185,16 @@ body {
   border-color: var(--primary);
 }
 
+.speech-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
 /* Edition selector */
 .edition-selector {
   display: flex;
@@ -213,8 +223,14 @@ body {
   border-color: var(--primary);
 }
 
-.edition-pill:hover:not(.active) {
+.edition-pill:hover:not(.active):not(:disabled) {
   border-color: var(--primary);
+}
+
+.edition-pill:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* Flag images inside card backs */
@@ -314,6 +330,7 @@ body {
   outline: 2px solid #0b61ff;
   outline-offset: 2px;
 }
+
 
 /* Icon toggle button */
 .icon-toggle {
@@ -476,6 +493,16 @@ input[name="turn-speed"] {
   font-weight: 500;
 }
 
+.game-timer {
+  display: block;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+}
+
 /* Turn timer - always takes up space, never collapses */
 .turn-timer {
   display: flex !important;
@@ -536,8 +563,6 @@ input[name="turn-speed"] {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 12px;
 }
 
 .turn-label {

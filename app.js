@@ -98,14 +98,13 @@ const DINO_ICONS = [
 ];
 
 const board = document.getElementById("game-board");
-const statusText = document.getElementById("status");
 const inviteButton = document.getElementById("invite-btn");
 const joinButton = document.getElementById("join-btn");
 const joinSection = document.getElementById("join-section");
 const disconnectButton = document.getElementById("disconnect-btn");
+const shareButton = document.getElementById("share-btn");
 const roomInput = document.getElementById("room-input");
 const roomCode = document.getElementById("room-code");
-const connectionStatus = document.getElementById("connection-status");
 const scoreboard = document.getElementById("scoreboard");
 const playerCountInputs = Array.from(
   document.querySelectorAll("input[name='player-count']")
@@ -123,6 +122,9 @@ let currentDeckSignature = "";
 let turnCount = 0;
 let turnTimerInterval = null;
 let turnTimerDisplay = null;
+let tickInterval = null;
+let gameTimerInterval = null;
+let gameTimerStart = null;
 let localGameSpeedMs = 0;
 let pendingInviteCopy = false;
 let multiplayerTurnTimerStarted = false;
@@ -145,24 +147,16 @@ function getPlayerCount() {
   return Number(selected ? selected.value : 2);
 }
 
-function setStatus(message) {
-  statusText.textContent = message;
-}
 
-function setTurnIndicator(message) {
-  const indicator = document.getElementById('turn-indicator');
-  if (indicator) {
-    indicator.textContent = message;
+
+function setRoomCode(code) {
+  if (roomCode) roomCode.textContent = code || "-";
+  if (disconnectButton) {
+    disconnectButton.textContent = code ? `Disconnect Room ${code}` : "Disconnect";
   }
 }
 
-function setRoomCode(code) {
-  roomCode.textContent = code || "-";
-}
-
-function setConnectionStatus(message) {
-  connectionStatus.textContent = message;
-}
+function setConnectionStatus(_message) {}
 
 function setPlayerControlsDisabled(disabled) {
   playerCountInputs.forEach((input) => {
@@ -176,32 +170,58 @@ function updateMultiplayerControls() {
 }
 
 function updateJoinDisconnectUI() {
-  // Show disconnect button only when connected to a room
-  if (multiplayer.active) {
+  const singlePlayer = getPlayerCount() === 1;
+  if (singlePlayer && !multiplayer.active) {
     if (joinSection) joinSection.classList.add('hidden');
-    if (disconnectButton) disconnectButton.classList.remove('hidden');
-  } else {
-    if (joinSection) joinSection.classList.remove('hidden');
-    if (disconnectButton) disconnectButton.classList.add('hidden');
+    return;
   }
+  if (joinSection) joinSection.classList.remove('hidden');
+  const inRoom = multiplayer.active;
+  if (inviteButton) inviteButton.classList.toggle('hidden', inRoom);
+  if (joinButton) joinButton.classList.toggle('hidden', inRoom);
+  if (roomInput) roomInput.classList.toggle('hidden', inRoom);
+  if (shareButton) shareButton.classList.toggle('hidden', !inRoom || !multiplayer.isHost);
+  if (disconnectButton) disconnectButton.classList.toggle('hidden', !inRoom);
 }
 
-function buildIconSet() {
+function mulberry32(seed) {
+  let t = seed;
+  return () => {
+    t += 0x6d2b79f5;
+    let r = Math.imul(t ^ (t >>> 15), t | 1);
+    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(array, rng) {
+  const result = array.slice();
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function buildIconSet(iconSeed) {
+  const rng = iconSeed != null ? mulberry32(iconSeed) : Math.random.bind(Math);
+  const s = arr => iconSeed != null ? seededShuffle(arr, rng) : shuffle(arr);
   if (currentEdition === "flags") {
     const pride = FLAG_ICONS.find(f => f.name === "pride");
-    const rest = shuffle(FLAG_ICONS.filter(f => f.name !== "pride"));
-    const selected = shuffle([pride, ...rest.slice(0, TOTAL_PAIRS - 1)]);
+    const rest = s(FLAG_ICONS.filter(f => f.name !== "pride"));
+    const selected = s([pride, ...rest.slice(0, TOTAL_PAIRS - 1)]);
     return selected.map((flag, index) => ({ id: index, name: flag.name }));
   }
   if (currentEdition === "bugs") {
-    const shuffled = shuffle([...CREEPY_CRAWLIES_ICONS]);
-    return shuffled.slice(0, TOTAL_PAIRS).map((bug, index) => ({ id: index, name: bug.name }));
+    const others = s(CREEPY_CRAWLIES_ICONS.filter(b => b.name !== "octopus"));
+    const selected = [CREEPY_CRAWLIES_ICONS.find(b => b.name === "octopus"), ...others.slice(0, TOTAL_PAIRS - 1)];
+    return selected.map((bug, index) => ({ id: index, name: bug.name }));
   }
   if (currentEdition === "dinos") {
-    const shuffled = shuffle([...DINO_ICONS]);
+    const shuffled = s([...DINO_ICONS]);
     return shuffled.slice(0, TOTAL_PAIRS).map((dino, index) => ({ id: index, name: dino.name }));
   }
-  const shuffled = shuffle([...OBJECT_TYPES]);
+  const shuffled = s([...OBJECT_TYPES]);
   return shuffled.slice(0, TOTAL_PAIRS).map((name, index) => ({ id: index, name }));
 }
 
@@ -277,8 +297,8 @@ function shuffle(array) {
   return result;
 }
 
-function buildDeckFromOrder(order) {
-  const icons = buildIconSet();
+function buildDeckFromOrder(order, iconSeed) {
+  const icons = buildIconSet(iconSeed);
   return order.map((matchId, index) => {
     const icon = icons[matchId];
     const iconData = createIconData(icon);
@@ -306,6 +326,7 @@ function createDeck() {
 
 function renderScoreboard() {
   scoreboard.innerHTML = "";
+  if (players.length === 1 && !multiplayer.active) return;
   const highestScore = players.length
     ? Math.max(...players.map((player) => player.score))
     : 0;
@@ -327,6 +348,72 @@ function renderScoreboard() {
     item.textContent = `${name}: ${player.score}`;
     scoreboard.appendChild(item);
   });
+}
+
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+// iOS Safari requires AudioContext to be resumed inside a user gesture
+document.addEventListener("touchstart", () => getAudioCtx(), { once: true });
+
+function playTone({ frequency = 440, type = "sine", duration = 0.15, gain = 0.3, delay = 0 } = {}) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const vol = ctx.createGain();
+  osc.connect(vol);
+  vol.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, ctx.currentTime + delay);
+  vol.gain.setValueAtTime(gain, ctx.currentTime + delay);
+  vol.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+  osc.start(ctx.currentTime + delay);
+  osc.stop(ctx.currentTime + delay + duration);
+}
+
+const sfx = {
+  flip() {
+    playTone({ frequency: 600, type: "sine", duration: 0.08, gain: 0.2 });
+  },
+  match() {
+    playTone({ frequency: 523, duration: 0.12, gain: 0.3 });
+    playTone({ frequency: 659, duration: 0.12, gain: 0.3, delay: 0.1 });
+    playTone({ frequency: 784, duration: 0.2,  gain: 0.3, delay: 0.2 });
+  },
+  miss() {
+    playTone({ frequency: 330, type: "sawtooth", duration: 0.12, gain: 0.2 });
+    playTone({ frequency: 220, type: "sawtooth", duration: 0.18, gain: 0.2, delay: 0.1 });
+  },
+  tick() {
+    playTone({ frequency: 1200, type: "square", duration: 0.04, gain: 0.1 });
+  },
+  timerOut() {
+    playTone({ frequency: 440, type: "sawtooth", duration: 0.15, gain: 0.3 });
+    playTone({ frequency: 370, type: "sawtooth", duration: 0.15, gain: 0.3, delay: 0.15 });
+    playTone({ frequency: 311, type: "sawtooth", duration: 0.3,  gain: 0.3, delay: 0.3 });
+  },
+};
+
+function speak(text) {
+  if (!window.speechSynthesis || currentEdition === "default") return;
+  if (!document.getElementById("speech-toggle")?.checked) return;
+  const say = () => {
+    window.speechSynthesis.resume();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const karen = window.speechSynthesis.getVoices().find(v => v.name === "Karen");
+    if (karen) utterance.voice = karen;
+    window.speechSynthesis.speak(utterance);
+  };
+  if (window.speechSynthesis.getVoices().length > 0) {
+    say();
+  } else {
+    let spoke = false;
+    window.speechSynthesis.addEventListener("voiceschanged", () => { spoke = true; say(); }, { once: true });
+    setTimeout(() => { if (!spoke) say(); }, 500);
+  }
 }
 
 function getRandomDarkColor() {
@@ -392,12 +479,10 @@ function resetSelections() {
 
 function advancePlayer() {
   currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-  // Update turn indicator immediately
-  const turnMsg = players.length === 1 ? "Your turn" : `${players[currentPlayerIndex].name}'s turn`;
-  setTurnIndicator(turnMsg);
 }
 
 function endGame() {
+  stopGameTimer();
   clearTurnTimer();
   lockBoard = true;
   const highestScore = Math.max(...players.map((player) => player.score));
@@ -419,10 +504,10 @@ function endGame() {
   });
 
   renderScoreboard();
-  setStatus(`Game over! ${message}`);
 }
 
 function handleMatch(firstIndex, secondIndex) {
+  sfx.match();
   clearTurnTimer();
   deck[firstIndex].matched = true;
   deck[secondIndex].matched = true;
@@ -432,11 +517,6 @@ function handleMatch(firstIndex, secondIndex) {
   updateCardUI(firstIndex);
   updateCardUI(secondIndex);
   renderScoreboard();
-  const message =
-    players.length === 1
-      ? "Match! Keep going."
-      : `${players[currentPlayerIndex].name} found a match and goes again.`;
-  setStatus(message);
 
   window.setTimeout(() => {
     resetSelections();
@@ -449,10 +529,8 @@ function handleMatch(firstIndex, secondIndex) {
 }
 
 function handleMismatch(firstIndex, secondIndex) {
+  sfx.miss();
   clearTurnTimer();
-  const message =
-    players.length === 1 ? "No match. Try again." : "No match. Next player's turn.";
-  setStatus(message);
   window.setTimeout(() => {
     deck[firstIndex].flipped = false;
     deck[secondIndex].flipped = false;
@@ -460,11 +538,6 @@ function handleMismatch(firstIndex, secondIndex) {
     updateCardUI(secondIndex);
     advancePlayer();
     renderScoreboard();
-    const turnMessage =
-      players.length === 1
-        ? "Your turn. Select two cards."
-        : `${players[currentPlayerIndex].name}'s turn.`;
-    setStatus(turnMessage);
     resetSelections();
     lockBoard = false;
   }, 800);
@@ -510,6 +583,18 @@ function startTurnTimer(ms) {
     }
   }, 50);
 
+  {
+    const scheduleTick = () => {
+      const remaining = Math.max(0, ms - (Date.now() - start));
+      const delay = 100 + (remaining / ms) * 900; // 1000ms at start → 100ms at end
+      tickInterval = setTimeout(() => {
+        sfx.tick();
+        if (remaining > 0) scheduleTick();
+      }, delay);
+    };
+    scheduleTick();
+  }
+
   turnTimerInterval = setTimeout(() => {
     console.log('Timer expired!');
     clearTurnTimer();
@@ -522,6 +607,7 @@ function startTurnTimer(ms) {
 }
 
 function handleTimeoutTurn() {
+  sfx.timerOut();
   if (firstSelection !== null) {
     // Flip back any revealed card
     deck[firstSelection].flipped = false;
@@ -530,18 +616,17 @@ function handleTimeoutTurn() {
   resetSelections();
   advancePlayer();
   renderScoreboard();
-  const turnMessage =
-    players.length === 1
-      ? "Time's up! Your turn. Select two cards."
-      : `${players[currentPlayerIndex].name}'s turn.`;
-  setStatus(turnMessage);
-  const turnIndicatorMsg = players.length === 1 ? "Your turn" : `${players[currentPlayerIndex].name}'s turn`;
-  setTurnIndicator(turnIndicatorMsg);
+  if (players.length > 1) {
+  }
   lockBoard = false;
   // Timer will start when the next player flips their first card
 }
 
 function clearTurnTimer() {
+  if (tickInterval) {
+    clearTimeout(tickInterval);
+    tickInterval = null;
+  }
   if (turnTimerDisplay) {
     clearInterval(turnTimerDisplay);
     turnTimerDisplay = null;
@@ -581,30 +666,29 @@ function handleCardSelection(index) {
 
   card.flipped = true;
   updateCardUI(index);
+  const isMatch = firstSelection !== null && deck[firstSelection].matchId === card.matchId;
+  const matchText = card.label === "Octopus" ? "AWWWW, Pink baby octopus!" : "Pair ringo!";
+  speak(isMatch ? matchText : card.label);
 
   if (firstSelection === null) {
+    sfx.flip();
     // Show restart button on first card flip
     showRestartButton();
     // Increment turn counter when a new turn starts
     turnCount += 1;
+    // Start overall game timer for single player on first flip
+    if (players.length === 1 && !gameTimerStart) startGameTimer();
     firstSelection = index;
-    // Check if timer is enabled
-    const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
-    if (timerEnabled) {
+    // Turn timer only for multiplayer
+    if (players.length > 1) {
       // Calculate time based on pairs discovered: 8s at start, 3s when all pairs found
       const pairsDiscovered = matchedPairs;
       const timeSeconds = Math.max(3, 8 - (pairsDiscovered / TOTAL_PAIRS) * 5);
-      const timeMs = timeSeconds * 1000;
-      console.log('Pairs discovered:', pairsDiscovered, 'Time per turn:', timeSeconds, 's');
+      const timeMs = timeSeconds * 1000 * 0.8;
       startTurnTimer(timeMs);
     }
-    const promptMessage =
-      players.length === 1
-        ? "Select another card."
-        : `${players[currentPlayerIndex].name}'s turn. Select another card.`;
-    setStatus(promptMessage);
-    const turnMsg = players.length === 1 ? "Your turn" : `${players[currentPlayerIndex].name}'s turn`;
-    setTurnIndicator(turnMsg);
+    if (players.length > 1) {
+    }
     return;
   }
 
@@ -613,14 +697,41 @@ function handleCardSelection(index) {
   evaluateSelection();
 }
 
+function startGameTimer() {
+  const el = document.getElementById("game-timer");
+  if (!el) return;
+  gameTimerStart = Date.now();
+  el.classList.remove("hidden");
+  el.textContent = "0:00";
+  gameTimerInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - gameTimerStart) / 1000);
+    el.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+  }, 500);
+}
+
+function stopGameTimer() {
+  if (gameTimerInterval) {
+    clearInterval(gameTimerInterval);
+    gameTimerInterval = null;
+  }
+}
+
+function resetGameTimer(showIdle = false) {
+  stopGameTimer();
+  gameTimerStart = null;
+  const el = document.getElementById("game-timer");
+  if (el) {
+    el.textContent = "0:00";
+    el.classList.toggle("hidden", !showIdle);
+    el.textContent = "0:00";
+  }
+}
+
 function startGame() {
   if (multiplayer.active) {
     return;
   }
-  // Hide restart button until first card is flipped
-  if (restartButton) {
-    restartButton.classList.add('hidden');
-  }
+  hideRestartButton();
   players = Array.from({ length: getPlayerCount() }, (_, index) => ({
     name: `Player ${index + 1}`,
     score: 0,
@@ -632,6 +743,8 @@ function startGame() {
   matchedPairs = 0;
   multiplayerGameOver = false;
   turnCount = 0;
+  clearTurnTimer();
+  resetGameTimer(getPlayerCount() === 1);
   // Pick card back pattern and color for this game
   if (currentEdition === "flags") {
     currentCardBackPattern = "pattern-flags";
@@ -651,8 +764,8 @@ function startGame() {
 
   renderBoard();
   renderScoreboard();
-  setStatus(`${players[currentPlayerIndex].name}'s turn. Select two cards.`);
-  setTurnIndicator(`${players[currentPlayerIndex].name}'s turn`);
+  if (players.length > 1) {
+  }
 }
 
 function updateUrlWithRoom(roomId) {
@@ -665,13 +778,24 @@ function updateUrlWithRoom(roomId) {
   window.history.replaceState({}, "", url.toString());
 }
 
+function applyEdition(edition) {
+  if (!edition || edition === currentEdition) return false;
+  currentEdition = edition;
+  document.querySelectorAll(".edition-pill").forEach(b => {
+    b.classList.toggle("active", b.dataset.edition === edition);
+  });
+  document.getElementById("speech-toggle-label")?.classList.toggle("hidden", edition === "default");
+  return true;
+}
+
 function applyServerState(state) {
   if (!state) {
     return;
   }
+  const editionChanged = applyEdition(state.edition);
   const signature = state.deck.join(",");
-  if (signature !== currentDeckSignature) {
-    deck = buildDeckFromOrder(state.deck);
+  if (signature !== currentDeckSignature || editionChanged) {
+    deck = buildDeckFromOrder(state.deck, state.iconSeed);
     currentDeckSignature = signature;
     // Generate a new color and pattern for each new game
     currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
@@ -704,24 +828,18 @@ function applyServerState(state) {
   // Start timer only once when first card in turn is flipped (and timer is enabled)
   // Timer is visible to all players, not just the current player
   const hasFirstCardFlipped = state.revealed && state.revealed.length === 1;
-  const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
 
-  if (hasFirstCardFlipped && state.speedMs && timerEnabled && !multiplayerTurnTimerStarted) {
-    // First card just flipped, start the timer for everyone (if timer is enabled)
+  if (hasFirstCardFlipped && state.speedMs && !multiplayerTurnTimerStarted) {
     multiplayerTurnTimerStarted = true;
     startTurnTimer(state.speedMs);
   } else if (!hasFirstCardFlipped) {
-    // No cards revealed yet, reset the flag for next turn
     multiplayerTurnTimerStarted = false;
-    clearTurnTimer();
-  } else if (!timerEnabled) {
-    // Timer is disabled, ensure it's cleared
     clearTurnTimer();
   }
 
   // Show restart button for host when first card in game is flipped
-  if (hasFirstCardFlipped && multiplayer.isHost && restartButton) {
-    restartButton.classList.remove('hidden');
+  if (hasFirstCardFlipped && multiplayer.isHost) {
+    showRestartButton();
   }
 
   renderScoreboard();
@@ -734,21 +852,15 @@ function applyServerState(state) {
       winners.length === 1
         ? `${winners[0]} wins with ${highestScore} pairs!`
         : `Tie between ${winners.join(" and ")} with ${highestScore} pairs each.`;
-    setStatus(`Game over! ${message}`);
     return;
   }
 
   const currentPlayer = players[currentPlayerIndex];
   if (!currentPlayer) {
-    setStatus("Waiting for players...");
     return;
   }
   if (currentPlayer.id === multiplayer.playerId) {
-    setStatus("Your turn. Select two cards.");
-    setTurnIndicator("Your turn");
   } else {
-    setStatus(`${currentPlayer.name}'s turn.`);
-    setTurnIndicator(`${currentPlayer.name}'s turn`);
   }
 }
 
@@ -783,26 +895,20 @@ function ensureSocket() {
       setRoomCode("");
       updateUrlWithRoom(null);
       updateMultiplayerControls();
-      // Restore player count selector to local mode
+      // Restore player count selector and edition pills to local mode
       const playerCountSelector = document.querySelector('.player-count-selector');
-      if (playerCountSelector) {
-        playerCountSelector.classList.remove('hidden');
-      }
+      if (playerCountSelector) playerCountSelector.classList.remove('hidden');
+      document.querySelectorAll('.edition-pill').forEach(b => { b.disabled = false; });
       // Hide connection info
       const connectionInfo = document.getElementById('connection-info');
       if (connectionInfo) {
         connectionInfo.classList.add('hidden');
       }
       // Restore buttons in local mode
-      if (restartButton) {
-        restartButton.classList.add('hidden'); // Hidden until first card flip
-      }
+      hideRestartButton();
       if (inviteButton) inviteButton.classList.remove('hidden');
-      const timerBtn = document.getElementById('timer-toggle-btn');
-      if (timerBtn) timerBtn.classList.remove('hidden');
       // Update join/disconnect button visibility
       updateJoinDisconnectUI();
-      setStatus("Disconnected from multiplayer. Starting local game.");
       startGame();
     }
   });
@@ -812,7 +918,6 @@ function ensureSocket() {
     try {
       message = JSON.parse(event.data);
     } catch (error) {
-      setStatus("Received an invalid message.");
       return;
     }
 
@@ -830,30 +935,18 @@ function ensureSocket() {
         // Pick a random card back pattern and color for this game
         currentCardBackPattern = CARD_BACK_PATTERNS[Math.floor(Math.random() * CARD_BACK_PATTERNS.length)];
         currentCardBackColor = getRandomDarkColor();
-        // Hide player count selector in multiplayer mode
-        const playerCountSelector = document.querySelector('.player-count-selector');
-        if (playerCountSelector) {
-          playerCountSelector.classList.add('hidden');
-        }
         // Show connection info
         const connectionInfo = document.getElementById('connection-info');
         if (connectionInfo) {
           connectionInfo.classList.remove('hidden');
         }
+        // Hide player count in multiplayer — player count is governed by who joins (max 4)
+        document.getElementById('player-count-selector')?.classList.add('hidden');
+        // Disable edition pills for non-hosts
+        document.querySelectorAll('.edition-pill').forEach(b => { b.disabled = !multiplayer.isHost; });
         // Update join/disconnect button visibility
         updateJoinDisconnectUI();
-        // Hide buttons for non-hosts in multiplayer
-        if (!multiplayer.isHost) {
-          if (restartButton) restartButton.classList.add('hidden');
-          if (inviteButton) inviteButton.classList.add('hidden');
-          const timerBtn = document.getElementById('timer-toggle-btn');
-          if (timerBtn) timerBtn.classList.add('hidden');
-        } else {
-          // Host: ensure buttons are visible
-          if (inviteButton) inviteButton.classList.remove('hidden');
-          const timerBtn = document.getElementById('timer-toggle-btn');
-          if (timerBtn) timerBtn.classList.remove('hidden');
-        }
+        if (!multiplayer.isHost) hideRestartButton();
         applyServerState(message.state);
         if (pendingInviteCopy) {
           pendingInviteCopy = false;
@@ -864,7 +957,6 @@ function ensureSocket() {
         applyServerState(message.state);
         break;
       case "error":
-        setStatus(message.message || "Something went wrong.");
         break;
       default:
         break;
@@ -891,15 +983,11 @@ function sendMessage(payload) {
 }
 
 function hostMultiplayer() {
-  const timerEnabled = document.getElementById('timer-toggle-btn')?.classList.contains('active') || false;
-  // Calculate initial speedMs: 12 seconds if timer enabled, 0 if disabled
-  const speedMs = timerEnabled ? 12000 : 0;
-  sendMessage({ type: "create-room", speedMs });
+  sendMessage({ type: "create-room", speedMs: 12000, edition: currentEdition });
 }
 
 function joinMultiplayer(code) {
   if (!code) {
-    setStatus("Enter a room code to join.");
     return;
   }
   sendMessage({ type: "join-room", roomId: code });
@@ -907,20 +995,26 @@ function joinMultiplayer(code) {
 
 function fallbackCopyInvite(link) {
   window.prompt("Copy this link to invite others:", link);
-  setStatus("Invite link ready. Share it with your players.");
 }
 
 function doCopyLink() {
-  // Create clean invite URL with only the room param (no cheat or other params)
   const url = new URL(window.location.href);
-  url.search = ""; // Clear all params
+  url.search = "";
   url.searchParams.set("room", multiplayer.roomId);
   const link = url.toString();
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard
-      .writeText(link)
-      .then(() => setStatus("Invite link copied! Share it to let others join."))
-      .catch(() => fallbackCopyInvite(link));
+
+  const doConfirm = () => {
+    if (shareButton) {
+      const prev = shareButton.innerHTML;
+      shareButton.textContent = "✓";
+      setTimeout(() => { shareButton.innerHTML = prev; }, 2000);
+    }
+  };
+
+  if (navigator.share) {
+    navigator.share({ title: "Join my Pairingo game!", url: link }).catch(() => {});
+  } else if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(link).then(doConfirm).catch(() => fallbackCopyInvite(link));
   } else {
     fallbackCopyInvite(link);
   }
@@ -951,6 +1045,12 @@ inviteButton.addEventListener("click", () => {
   copyInviteLink();
 });
 
+if (shareButton) {
+  shareButton.addEventListener("click", () => {
+    doCopyLink();
+  });
+}
+
 joinButton.addEventListener("click", () => {
   const code = roomInput.value.trim().toUpperCase();
   joinMultiplayer(code);
@@ -972,7 +1072,6 @@ disconnectButton.addEventListener("click", () => {
 // Restart button
 const restartButton = document.getElementById('restart-btn');
 if (restartButton) {
-  restartButton.classList.add('hidden'); // Hidden until game starts
   restartButton.addEventListener('click', () => {
     if (multiplayer.active) {
       sendMessage({ type: "restart-game" });
@@ -983,30 +1082,17 @@ if (restartButton) {
 }
 
 function showRestartButton() {
-  if (restartButton) {
-    // Only show restart button for host in multiplayer, always show in local
-    if (multiplayer.active && !multiplayer.isHost) {
-      restartButton.classList.add('hidden');
-    } else {
-      restartButton.classList.remove('hidden');
-    }
-  }
+  if (multiplayer.active && !multiplayer.isHost) return;
+  if (restartButton) restartButton.style.display = 'block';
+  document.getElementById('player-count-selector')?.style.setProperty('display', 'none');
+}
+
+function hideRestartButton() {
+  if (restartButton) restartButton.style.display = 'none';
+  document.getElementById('player-count-selector')?.style.setProperty('display', 'grid');
 }
 
 
-// Timer toggle button
-const timerToggleBtn = document.getElementById('timer-toggle-btn');
-if (timerToggleBtn) {
-  timerToggleBtn.addEventListener('click', () => {
-    timerToggleBtn.classList.toggle('active');
-    // If in multiplayer and host, broadcast timer change to all players
-    if (multiplayer.active && multiplayer.isHost) {
-      const timerEnabled = timerToggleBtn.classList.contains('active');
-      const speedMs = timerEnabled ? 12000 : 0;
-      sendMessage({ type: "update-timer", speedMs });
-    }
-  });
-}
 
 // UI toggle (slide controls/scoreboard off-screen)
 const toggleUIBtn = document.getElementById("toggle-ui");
@@ -1030,14 +1116,32 @@ if (cheatParam === "on" && cheatModeCheckbox) {
   cheatModeCheckbox.checked = true;
 }
 
+// Restore saved edition
+const savedEdition = localStorage.getItem("edition");
+if (savedEdition) {
+  const pill = document.querySelector(`.edition-pill[data-edition="${savedEdition}"]`);
+  if (pill) {
+    document.querySelectorAll(".edition-pill").forEach(b => b.classList.remove("active"));
+    pill.classList.add("active");
+    currentEdition = savedEdition;
+    document.getElementById("speech-toggle-label")?.classList.toggle("hidden", currentEdition === "default");
+  }
+}
+
 // Switch edition
 document.querySelectorAll(".edition-pill").forEach(btn => {
   btn.addEventListener("click", () => {
-    if (multiplayer.active) return;
+    if (multiplayer.active && !multiplayer.isHost) return;
     document.querySelectorAll(".edition-pill").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentEdition = btn.dataset.edition;
-    startGame();
+    localStorage.setItem("edition", currentEdition);
+    document.getElementById("speech-toggle-label")?.classList.toggle("hidden", currentEdition === "default");
+    if (multiplayer.active && multiplayer.isHost) {
+      sendMessage({ type: "set-edition", edition: currentEdition });
+    } else {
+      startGame();
+    }
   });
 });
 
@@ -1045,6 +1149,7 @@ document.querySelectorAll(".edition-pill").forEach(btn => {
 playerCountInputs.forEach((input) => {
   input.addEventListener('change', () => {
     if (!multiplayer.active) {
+      updateJoinDisconnectUI();
       startGame();
     }
   });
@@ -1052,3 +1157,4 @@ playerCountInputs.forEach((input) => {
 
 updateMultiplayerControls();
 startGame();
+
