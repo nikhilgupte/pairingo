@@ -7,7 +7,21 @@
       "Bash(sleep:*)",
       "Bash(curl:*)",
       "Bash(identify:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(ipconfig getifaddr:*)",
+      "Bash(rm:*)",
+      "Read(//Users/nikhil/Projects/**)",
+      "Bash(gh repo:*)",
+      "Bash(git remote:*)",
+      "Bash(cd:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); pages=d['query']['pages']; ii=list\\(pages.values\\(\\)\\)[0].get\\('imageinfo',[]\\); print\\(ii[0]['url'] if ii else 'no url'\\)\")",
+      "Bash(python3 -c ':*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(sips:*)",
+      "Bash(git rm:*)",
+      "Bash(npm start:*)"
     ]
   }
 }

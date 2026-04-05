@@ -14,7 +14,6 @@ Pairingo uses 18 unique icons. Each icon appears twice in the deck (one pair per
 | 6 | 🦋 Butterfly | Butterfly - animal, insect |
 | 7 | ⚽ Soccer Ball | Soccer ball - sport, ball |
 | 8 | 🏈 Football | Football - sport, game |
-| 9 | 🎮 Video Game | Video game - recreation, gaming |
 | 10 | 🎸 Guitar | Guitar - music, instrument |
 | 11 | 🔧 Wrench | Wrench - tool, repair |
 | 12 | 🔨 Hammer | Hammer - tool, building |
@@ -23,7 +22,6 @@ Pairingo uses 18 unique icons. Each icon appears twice in the deck (one pair per
 | 15 | 🌲 Tree | Tree - nature, plant |
 | 16 | 🌻 Sunflower | Sunflower - nature, flower |
 | 17 | ✈️ Airplane | Airplane - travel, transport |
-| 18 | 🎪 Circus Tent | Circus tent - entertainment, fun |
 
 ---
 
@@ -49,7 +47,6 @@ Choose from these everyday items to replace any of the current icons:
 
 ### Sports & Activities
 - ⚽ Soccer Ball
-- 🏈 American Football
 - ⚾ Baseball
 - 🎾 Tennis Ball (current)
 - 🏐 Volleyball
@@ -110,8 +107,8 @@ Choose from these everyday items to replace any of the current icons:
 - 🚢 Ship
 - ⛵ Sailboat
 - 🚁 Helicopter
-- 🛴 Skateboard
-- 🛹 Scooter
+- 🛴 Scooter
+- 🛹 Skateboard
 
 ### Clothing & Accessories
 - 👒 Hat
@@ -138,7 +135,6 @@ Choose from these everyday items to replace any of the current icons:
 - 🪥 Toothbrush
 
 ### Recreation & Games
-- 🎮 Video Game
 - 🎲 Dice
 - 🎯 Target
 - 🎱 Pool Ball

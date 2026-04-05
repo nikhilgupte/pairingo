@@ -76,26 +76,7 @@ const CREEPY_CRAWLIES_ICONS = [
   { name: "octopus", type: "emoji", value: "🐙", label: "Octopus" },
 ];
 
-const DINO_ICONS = [
-  { name: "tyrannosaurus", type: "image", value: "dinos/tyrannosaurus.svg", label: "T-Rex" },
-  { name: "stegosaurus", type: "image", value: "dinos/stegosaurus.svg", label: "Stegosaurus" },
-  { name: "ankylosaurus", type: "image", value: "dinos/ankylosaurus.svg", label: "Ankylosaurus" },
-  { name: "spinosaurus", type: "image", value: "dinos/spinosaurus.svg", label: "Spinosaurus" },
-  { name: "coelophysis", type: "image", value: "dinos/coelophysis.svg", label: "Coelophysis" },
-  { name: "acrocanthosaurus", type: "image", value: "dinos/acrocanthosaurus.svg", label: "Acrocanthosaurus" },
-  { name: "eoraptor", type: "image", value: "dinos/eoraptor.svg", label: "Eoraptor" },
-  { name: "edmontosaurus", type: "image", value: "dinos/edmontosaurus.svg", label: "Edmontosaurus" },
-  { name: "kentrosaurus", type: "image", value: "dinos/kentrosaurus.svg", label: "Kentrosaurus" },
-  { name: "camarasaurus", type: "image", value: "dinos/camarasaurus.svg", label: "Camarasaurus" },
-  { name: "parasaurolophus", type: "image", value: "dinos/parasaurolophus.svg", label: "Parasaurolophus" },
-  { name: "iguanodon", type: "image", value: "dinos/iguanodon.svg", label: "Iguanodon" },
-  { name: "diplodocus", type: "image", value: "dinos/diplodocus.svg", label: "Diplodocus" },
-  { name: "brachiosaurus", type: "image", value: "dinos/brachiosaurus.svg", label: "Brachiosaurus" },
-  { name: "velociraptor", type: "image", value: "dinos/velociraptor.svg", label: "Velociraptor" },
-  { name: "triceratops", type: "image", value: "dinos/triceratops.svg", label: "Triceratops" },
-  { name: "deinonychus", type: "image", value: "dinos/deinonychus.svg", label: "Deinonychus" },
-  { name: "sauropod", type: "emoji", value: "🦕", label: "Sauropod" },
-];
+const DINO_ICONS = [];
 
 const board = document.getElementById("game-board");
 const inviteButton = document.getElementById("invite-btn");
