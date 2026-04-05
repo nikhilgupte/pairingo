@@ -359,15 +359,21 @@ function renderScoreboard() {
 let audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === "suspended") audioCtx.resume();
   return audioCtx;
 }
 
-// iOS Safari requires AudioContext to be resumed inside a user gesture
-document.addEventListener("touchstart", () => getAudioCtx(), { once: true });
-
-function playTone({ frequency = 440, type = "sine", duration = 0.15, gain = 0.3, delay = 0 } = {}) {
+async function resumeAudio() {
   const ctx = getAudioCtx();
+  if (ctx.state !== "running") await ctx.resume();
+  return ctx;
+}
+
+// iOS Safari suspends AudioContext until a user gesture — resume on every touch
+// (not once: it can get re-suspended when backgrounded)
+document.addEventListener("touchstart", resumeAudio, { passive: true });
+
+async function playTone({ frequency = 440, type = "sine", duration = 0.15, gain = 0.3, delay = 0 } = {}) {
+  const ctx = await resumeAudio();
   const osc = ctx.createOscillator();
   const vol = ctx.createGain();
   osc.connect(vol);
