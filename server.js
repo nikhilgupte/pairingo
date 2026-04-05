@@ -168,7 +168,7 @@ function handleSetEdition(ws, { edition = "default" } = {}) {
     send(ws, { type: "error", message: "Only the host can change the edition." });
     return;
   }
-  const valid = ["default", "flags", "bugs"];
+  const valid = ["default", "flags", "bugs", "dinos"];
   room.edition = valid.includes(edition) ? edition : "default";
   resetRoom(room);
   broadcast(room, { type: "state-update", state: buildState(room) });
@@ -177,7 +177,7 @@ function handleSetEdition(ws, { edition = "default" } = {}) {
 function handleCreateRoom(ws, { speedMs = 0, edition = "default" } = {}) {
   const roomId = createRoomId();
   const seed = createSeed();
-  const valid = ["default", "flags", "bugs"];
+  const valid = ["default", "flags", "bugs", "dinos"];
   const iconSeed = createSeed();
   const room = {
     id: roomId,

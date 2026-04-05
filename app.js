@@ -76,7 +76,32 @@ const CREEPY_CRAWLIES_ICONS = [
   { name: "octopus", type: "emoji", value: "🐙", label: "Octopus" },
 ];
 
-const DINO_ICONS = [];
+const DINO_ICONS = [
+  { name: "tyrannosaurus", type: "image", value: "dinos/tyrannosaurus.jpg", label: "T-Rex" },
+  { name: "triceratops", type: "image", value: "dinos/triceratops.png", label: "Triceratops" },
+  { name: "stegosaurus", type: "image", value: "dinos/stegosaurus.jpg", label: "Stegosaurus" },
+  { name: "brachiosaurus", type: "image", value: "dinos/brachiosaurus.jpg", label: "Brachiosaurus" },
+  { name: "velociraptor", type: "image", value: "dinos/velociraptor.png", label: "Velociraptor" },
+  { name: "pteranodon", type: "image", value: "dinos/pteranodon.png", label: "Pteranodon" },
+  { name: "spinosaurus", type: "image", value: "dinos/spinosaurus.png", label: "Spinosaurus" },
+  { name: "diplodocus", type: "image", value: "dinos/diplodocus.jpg", label: "Diplodocus" },
+  { name: "parasaurolophus", type: "image", value: "dinos/parasaurolophus.png", label: "Parasaurolophus" },
+  { name: "allosaurus", type: "image", value: "dinos/allosaurus.png", label: "Allosaurus" },
+  { name: "archaeopteryx", type: "image", value: "dinos/archaeopteryx.png", label: "Archaeopteryx" },
+  { name: "carnotaurus", type: "image", value: "dinos/carnotaurus.png", label: "Carnotaurus" },
+  { name: "ceratosaurus", type: "image", value: "dinos/ceratosaurus.png", label: "Ceratosaurus" },
+  { name: "compsognathus", type: "image", value: "dinos/compsognathus.png", label: "Compsognathus" },
+  { name: "dimetrodon", type: "image", value: "dinos/dimetrodon.png", label: "Dimetrodon" },
+  { name: "dracorex", type: "image", value: "dinos/dracorex.jpg", label: "Dracorex" },
+  { name: "elasmosaurus", type: "image", value: "dinos/elasmosaurus.png", label: "Elasmosaurus" },
+  { name: "gallimimus", type: "image", value: "dinos/gallimimus.jpg", label: "Gallimimus" },
+  { name: "iguanodon", type: "image", value: "dinos/iguanodon.jpg", label: "Iguanodon" },
+  { name: "mammoth", type: "image", value: "dinos/mammoth.jpg", label: "Mammoth" },
+  { name: "mosasaurus", type: "image", value: "dinos/mosasaurus.png", label: "Mosasaurus" },
+  { name: "protoceratops", type: "image", value: "dinos/protoceratops.png", label: "Protoceratops" },
+  { name: "scutellosaurus", type: "image", value: "dinos/scutellosaurus.jpg", label: "Scutellosaurus" },
+  { name: "smilodon", type: "image", value: "dinos/smilodon.jpg", label: "Smilodon" },
+];
 
 const board = document.getElementById("game-board");
 const inviteButton = document.getElementById("invite-btn");
@@ -432,7 +457,7 @@ function renderBoard() {
     const cardLabel = showLabel ? `<span class="flag-label">${card.label}</span>` : "";
     button.innerHTML =
       `<span class="card-face card-front ${currentCardBackPattern}" style="background-color: ${currentCardBackColor}; --card-color: ${currentCardBackColor};">${frontText}</span>` +
-      `<span class="card-face card-back emoji-icon${showLabel ? " flag-card" : ""}">${backContent}${cardLabel}</span>`;
+      `<span class="card-face card-back emoji-icon${showLabel ? " flag-card" : ""}${currentEdition === "dinos" ? " dino-card" : ""}">${backContent}${cardLabel}</span>`;
     if (cheatMode) {
       button.classList.add('cheat-mode');
     }

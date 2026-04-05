@@ -242,6 +242,11 @@ body {
   display: block;
 }
 
+.dino-card .flag-img {
+  width: 92%;
+  height: 92%;
+}
+
 .card-back.flag-card {
   flex-direction: column !important;
   gap: 6px;
